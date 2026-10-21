@@ -133,3 +133,16 @@ describe('identity matching stays exact', () => {
     expect(request).not.toHaveBeenCalled()
   })
 })
+
+describe('the header names the bot the way its roster row does', () => {
+  it('reads the default bot by its profile display name, not "Hermes"', async () => {
+    request.mockResolvedValue({ jobs: [job], scoped: 'default' })
+    $focused.set({ connectionId: 'local', profile: 'default' })
+    $lastRoster.set([{ connectionId: 'local', display_name: 'ReQurv', name: 'default' }])
+    renderPane()
+
+    expect(await screen.findByText('Report')).toBeTruthy()
+    expect(screen.getByText('ReQurv')).toBeTruthy()
+    expect(screen.queryByText('Hermes')).toBeNull()
+  })
+})

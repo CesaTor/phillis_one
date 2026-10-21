@@ -56,12 +56,7 @@ const ROUTINES_KEY = [ID, 'routines']
 const $lastJobs = atom<RoutineJob[]>([])
 
 function showsHandle(name: string, meta: BotMeta | null | undefined, bot?: RosterRow) {
-  const display = displayName(
-    {
-      name
-    },
-    meta
-  )
+  const display = displayName({ ...bot, name }, meta)
 
   return Boolean(name && display.toLowerCase() !== botHandle(name, bot).toLowerCase())
 }
@@ -1262,16 +1257,9 @@ export function RoutinesPane() {
         <BotFace color={avatarColor(color, bot)} image={image} name={bot} shape={shape} size={22} />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-baseline gap-1.5 truncate">
-            <div className="truncate text-xs font-semibold">
-              {displayName(
-                {
-                  name: bot
-                },
-                meta
-              )}
-            </div>
-            {showsHandle(bot, meta) ? (
-              <span className="shrink-0 font-mono text-[0.65rem] text-(--ui-text-quaternary)">{`@${botHandle(bot)}`}</span>
+            <div className="truncate text-xs font-semibold">{displayName({ ...owner, name: bot }, meta)}</div>
+            {showsHandle(bot, meta, owner) ? (
+              <span className="shrink-0 font-mono text-[0.65rem] text-(--ui-text-quaternary)">{`@${botHandle(bot, owner)}`}</span>
             ) : null}
           </div>
           <div className="text-[0.65rem] uppercase tracking-wider text-(--ui-text-quaternary)">{c.title}</div>
