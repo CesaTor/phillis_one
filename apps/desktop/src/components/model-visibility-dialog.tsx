@@ -11,6 +11,7 @@ import { GlyphSpinner } from '@/components/ui/glyph-spinner'
 import { HighlightMatches } from '@/components/ui/highlight-matches'
 import { RowButton } from '@/components/ui/row-button'
 import { Switch } from '@/components/ui/switch'
+import { addProviderAllowed } from '@/distribution'
 import type { HermesGateway } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Plus, Search, X } from '@/lib/icons'
@@ -271,6 +272,7 @@ export function ModelVisibilityDialog({
         <div className="flex items-center justify-between px-3 py-2">
           <Button
             className="-ml-2 text-(--ui-text-tertiary)"
+            hidden={!addProviderAllowed()}
             onClick={() => {
               onOpenChange(false)
               onOpenProviders()

@@ -8,10 +8,13 @@ import {
   SETTINGS_ROUTE,
   STARMAP_ROUTE
 } from '@/app/routes'
+import type { PluginI18n, PluginLocaleBundles } from '@/i18n'
 
-import { brandText, brandTranslations } from './branding'
+import { brandPluginI18n, brandText, brandTranslations } from './branding'
 
 import {
+  addProviderAllowed,
+  chooseProviderLaterAllowed,
   distributionAsset,
   distributionKeyOptions,
   distributionLink,
@@ -21,8 +24,10 @@ import {
   filterSettingsNav,
   filterSettingsSearch,
   modelEffortAllowed,
+  onboardingReasonAllowed,
   providerAllowed,
   remoteConnectionsAllowed,
+  sessionsPaneAllowed,
   sharedMetricsAllowed
 } from '.'
 
@@ -38,6 +43,28 @@ afterEach(() => {
   vi.unstubAllEnvs()
 })
 
+// A `ctx.i18n` stand-in that records what a plugin registered.
+function recordingI18n() {
+  const registered: PluginLocaleBundles[] = []
+
+  const i18n = {
+    register: (bundles: PluginLocaleBundles) => {
+      registered.push(bundles)
+
+      return () => undefined
+    }
+  } as unknown as PluginI18n
+
+  return { i18n, registered }
+}
+
+const BOTS_BUNDLES: PluginLocaleBundles = {
+  en: { roster: { unavailable: (reason: string) => `Roster unavailable: ${reason}. Update Hermes.` } }
+}
+
+const unavailable = (bundles: PluginLocaleBundles | undefined) =>
+  (bundles?.en?.roster as { unavailable: (reason: string) => string }).unavailable('Hermes gateway is not connected')
+
 describe('upstream Hermes (no distribution)', () => {
   it('keeps every route, provider and surface', () => {
     expect(appViewForPath(CRON_ROUTE)).toBe('cron')
@@ -52,6 +79,30 @@ describe('upstream Hermes (no distribution)', () => {
     expect(sharedMetricsAllowed()).toBe(true)
     expect(brandText('HERMES AGENT')).toBe('HERMES AGENT')
     expect(modelEffortAllowed('requrv-hive', 'requrv-small-3.8', 'high')).toBe(true)
+  })
+
+  it('keeps the Sessions tab, add-provider doors, onboarding reason and choose-later', () => {
+    expect(sessionsPaneAllowed()).toBe(true)
+    expect(addProviderAllowed()).toBe(true)
+    expect(onboardingReasonAllowed()).toBe(true)
+    expect(chooseProviderLaterAllowed()).toBe(true)
+  })
+
+  it('keeps the gateway-not-connected error as upstream wrote it', async () => {
+    vi.resetModules()
+
+    const { GATEWAY_NOT_CONNECTED_MESSAGE } = await import('@/api/client')
+
+    expect(GATEWAY_NOT_CONNECTED_MESSAGE).toBe('Hermes gateway is not connected')
+  })
+
+  it('hands plugins their own i18n door, bundles untouched', () => {
+    const { i18n, registered } = recordingI18n()
+
+    expect(brandPluginI18n(i18n)).toBe(i18n)
+    brandPluginI18n(i18n).register(BOTS_BUNDLES)
+    expect(registered).toEqual([BOTS_BUNDLES])
+    expect(unavailable(registered[0])).toBe('Roster unavailable: Hermes gateway is not connected. Update Hermes.')
   })
 })
 
@@ -87,6 +138,39 @@ describe('ReAgent', () => {
 
     expect(offered).toEqual(['low', 'medium', 'xhigh'])
     expect(modelEffortAllowed('requrv-hive', 'some-other-model', 'high')).toBe(true)
+  })
+
+  it('offers no door to another provider and no way past the Hive key', () => {
+    reagent()
+
+    expect(addProviderAllowed()).toBe(false)
+    expect(chooseProviderLaterAllowed()).toBe(false)
+    expect(onboardingReasonAllowed()).toBe(false)
+  })
+
+  it('makes Bots the whole sidebar: no Sessions pane', () => {
+    reagent()
+
+    expect(sessionsPaneAllowed()).toBe(false)
+  })
+
+  it('names itself in the gateway-not-connected error plugins show raw (Bots group list)', async () => {
+    reagent()
+    vi.resetModules()
+
+    const { GATEWAY_NOT_CONNECTED_MESSAGE } = await import('@/api/client')
+
+    expect(GATEWAY_NOT_CONNECTED_MESSAGE).toBe('ReAgent gateway is not connected')
+  })
+
+  it('brands plugin locale bundles, interpolated values included', () => {
+    reagent()
+
+    const { i18n, registered } = recordingI18n()
+
+    brandPluginI18n(i18n).register(BOTS_BUNDLES)
+
+    expect(unavailable(registered[0])).toBe('Roster unavailable: ReAgent gateway is not connected. Update ReAgent.')
   })
 
   it('is local-only and never offers Nous telemetry', () => {

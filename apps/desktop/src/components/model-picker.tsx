@@ -4,6 +4,7 @@ import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
 import { type ReactElement, useMemo, useRef, useState } from 'react'
 
+import { addProviderAllowed } from '@/distribution'
 import { useI18n } from '@/i18n'
 import { catalogProviderMatches, modelOptionsQueryKey, requestModelOptions } from '@/lib/model-options'
 import { currentPickerSelection } from '@/lib/model-status-label'
@@ -221,7 +222,7 @@ export function ModelPickerDialog({
           <Button className="mr-auto" onClick={enterSlug} variant="ghost">
             {copy.addCustomModelAction}
           </Button>
-          <Button onClick={addProvider} variant="ghost">
+          <Button hidden={!addProviderAllowed()} onClick={addProvider} variant="ghost">
             {copy.addProvider}
           </Button>
           <Button onClick={() => onOpenChange(false)} variant="outline">

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { distributionKeyOptions } from '@/distribution'
+import { chooseProviderLaterAllowed, distributionKeyOptions, onboardingReasonAllowed } from '@/distribution'
 import { getGlobalModelOptions } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Check, ChevronDown, ChevronLeft, KeyRound, Loader2 } from '@/lib/icons'
@@ -454,7 +454,7 @@ export function DesktopOnboardingOverlay({
           </Button>
         ) : null}
         <div className="grid gap-3 p-5">
-          {reason ? <ReasonNotice reason={reason} /> : null}
+          {reason && onboardingReasonAllowed() ? <ReasonNotice reason={reason} /> : null}
           {ready && showPicker && !freeTierIntro && !onboarding.manual ? <FreeTierSetupNotice ctx={ctx} /> : null}
           {ready ? (
             freeTierIntro ? (
@@ -639,7 +639,7 @@ export function Picker({ ctx }: { ctx: OnboardingContext }) {
           }
           options={apiKeyOptions}
         />
-        {manual ? null : (
+        {manual || !chooseProviderLaterAllowed() ? null : (
           <div className="flex justify-center pt-1">
             <ChooseLaterLink />
           </div>
@@ -713,7 +713,7 @@ export function Picker({ ctx }: { ctx: OnboardingContext }) {
         {/* First run only: let the user defer the choice and land in the app.
             In manual mode the overlay already has a close affordance, so the
             "choose later" escape would be redundant — hide it. */}
-        {manual ? <span /> : <ChooseLaterLink />}
+        {manual || !chooseProviderLaterAllowed() ? <span /> : <ChooseLaterLink />}
         <Button className="-mr-2 font-medium" onClick={() => openKeyForm()} size="xs" type="button" variant="text">
           {t.onboarding.haveApiKey}
         </Button>

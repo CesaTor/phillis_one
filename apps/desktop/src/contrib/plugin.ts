@@ -14,6 +14,7 @@
 
 import type { ReadableAtom } from 'nanostores'
 
+import { brandPluginI18n } from '@/distribution/branding'
 import { pluginRest, type PluginRestOptions, pluginSocket } from '@/hermes'
 import { createPluginI18n, type PluginI18n } from '@/i18n'
 import {
@@ -370,6 +371,6 @@ export function createPluginContext(pluginId: string, onDispose?: (dispose: () =
     runAction: id => runPluginAppAction(pluginId, id),
     listActions: listPluginAppActions,
     storage: createPluginStorage(pluginId),
-    i18n: createPluginI18n(pluginId, track)
+    i18n: brandPluginI18n(createPluginI18n(pluginId, track))
   }
 }

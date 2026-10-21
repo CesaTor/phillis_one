@@ -38,6 +38,7 @@ import { discoverBundledPlugins } from '@/contrib/plugins'
 import { Slot } from '@/contrib/react/slot'
 import { registry } from '@/contrib/registry'
 import { discoverRuntimePlugins } from '@/contrib/runtime-loader'
+import { sessionsPaneEnabled } from '@/distribution/panes'
 import { LocalizedTabTitle, translateNow } from '@/i18n'
 import { NEW_SESSION_TITLE, sessionTitle as storedSessionTitle } from '@/lib/chat-runtime'
 import {
@@ -193,6 +194,7 @@ registry.registerMany([
   {
     id: 'sessions',
     area: 'panes',
+    enabled: sessionsPaneEnabled(),
     // String fallback only (menus, drag ghosts); the tab itself renders
     // `tabTitle` below so the strip follows `display.language` once it loads.
     title: translateNow('sidebar.sessions'),

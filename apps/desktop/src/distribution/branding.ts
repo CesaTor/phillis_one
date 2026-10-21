@@ -1,3 +1,5 @@
+import type { PluginI18n } from '@/i18n'
+
 import { distribution } from '.'
 
 // Product names in user-facing copy. Applied to the RESOLVED translation
@@ -51,4 +53,12 @@ export function brandText(text: string): string {
 /** The catalog with this distribution's product names; upstream Hermes is untouched. */
 export function brandTranslations<T>(catalog: T): T {
   return distribution() === 'reagent' ? (brand(catalog) as T) : catalog
+}
+
+/** A plugin's `ctx.i18n` whose bundles get the same product names as the app catalog: plugin
+ *  copy (Bots' "Hermes gateway is not connected", "update Hermes") never reaches `registry.ts`. */
+export function brandPluginI18n(i18n: PluginI18n): PluginI18n {
+  return distribution() === 'reagent'
+    ? { ...i18n, register: bundles => i18n.register(brandTranslations(bundles)) }
+    : i18n
 }

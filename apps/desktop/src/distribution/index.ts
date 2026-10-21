@@ -15,10 +15,14 @@ import type { AppView } from '@/app/routes'
 export type DistributionId = 'hermes' | 'reagent'
 
 interface DistributionPolicy {
+  /** "Add provider…" doors in the model menus (Edit models, the model picker). */
+  addProvider: boolean
   /** `public/` images this distribution replaces (upstream path → its own). */
   assets: Readonly<Record<string, string>>
   /** Bundled plugins (`src/plugins/<id>`) allowed to register. */
   bundledPlugins: ReadonlySet<string>
+  /** First-run "I'll choose a provider later": lands in the app with no provider configured. */
+  chooseProviderLater: boolean
   /** Env-var credentials searchable from settings search (provider keys included). */
   credentialKeys: RegExp
   /** The `default` profile's bot name until the user gives it a title. */
@@ -30,12 +34,18 @@ interface DistributionPolicy {
   /** Reasoning levels per `<provider>/<model>` where narrower than the shared ladder. Mirrors the
    *  provider plugin's wire clamp, so pickers never offer a level the model rejects. */
   modelEfforts: Readonly<Record<string, ReadonlySet<string>>>
+  /** The launch reason above the onboarding picker (backend copy such as "not connected to any
+   *  AI provider… Run `hermes model`"). Off where the picker explains its one key itself. */
+  onboardingReason: boolean
   /** Command-palette rows in the core namespaces (`CORE_PALETTE_PREFIXES`). */
   paletteItems: ReadonlySet<string>
   /** Provider slugs (the backend provider catalog's ids). */
   providers: ReadonlySet<string>
   /** Remote gateways (connect to an existing backend, Hermes Cloud). Off = local-only. */
   remoteConnections: boolean
+  /** The core Sessions pane (the SESSIONS tab beside BOTS). Off: it never registers, so it has no
+   *  tab, ⌘K toggle or zone-menu row, and the Bots pane docked in its zone is the whole sidebar. */
+  sessionsPane: boolean
   /** Settings nav groups (a `SettingsView` id). */
   settingsGroups: ReadonlySet<string>
   /** Per group, the child rows kept; a group absent here keeps all of them. */
@@ -53,8 +63,11 @@ interface DistributionPolicy {
 }
 
 const REAGENT: DistributionPolicy = {
+  addProvider: false,
   assets: { 'nous-girl.png': 'reagent/mark.png', 'nous-girl-dark.png': 'reagent/mark.png' },
   bundledPlugins: new Set(['hermes-bots']),
+  // Without a Hive key the bot chat cannot open (the backend rejects a session with no model).
+  chooseProviderLater: false,
   credentialKeys: /^REQURV_HIVE_/,
   defaultBotName: 'ReQurv',
   logo: { dark: 'reagent/logo-dark.webp', light: 'reagent/logo-light.webp' },
@@ -63,9 +76,11 @@ const REAGENT: DistributionPolicy = {
     'https://github.com/NousResearch/hermes-agent/releases': 'https://github.com/CesaTor/phillis_one/commits/reagent'
   },
   modelEfforts: { 'requrv-hive/requrv-small-3.8': new Set(['low', 'medium', 'xhigh']) },
+  onboardingReason: false,
   paletteItems: new Set(['nav-new', 'nav-new-window', 'nav-settings', 'nav-starmap', 'cc-reload-window']),
   providers: new Set(['requrv-hive']),
   remoteConnections: false,
+  sessionsPane: false,
   settingsGroups: new Set([
     'config:model',
     'config:chat',
@@ -133,6 +148,22 @@ export function sharedMetricsAllowed(): boolean {
 
 export function voiceAllowed(): boolean {
   return policy()?.voice ?? true
+}
+
+export function addProviderAllowed(): boolean {
+  return policy()?.addProvider ?? true
+}
+
+export function chooseProviderLaterAllowed(): boolean {
+  return policy()?.chooseProviderLater ?? true
+}
+
+export function onboardingReasonAllowed(): boolean {
+  return policy()?.onboardingReason ?? true
+}
+
+export function sessionsPaneAllowed(): boolean {
+  return policy()?.sessionsPane ?? true
 }
 
 export function bundledPluginAllowed(id: string): boolean {

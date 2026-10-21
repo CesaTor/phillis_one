@@ -159,12 +159,15 @@ export function ModelOptionsContent({
   const unsupportedSpeed = fastControl.kind === 'param' && fastControl.canEnable === false
   const ultrafastOn = serviceTier === 'ultrafast'
   const fastOn = fastControl.kind === 'none' ? false : fastControl.on && !ultrafastOn
+  const hasOptionRows = showThinkingToggle || hasFast || ultrafastSupported
 
   return !hasFast && !ultrafastSupported && !reasoning ? (
     <div className="px-2.5 py-3 text-xs text-(--ui-text-tertiary)">{copy.noOptions}</div>
   ) : (
     <>
-      <DropdownMenuLabel className={dropdownMenuSectionLabel}>{copy.options}</DropdownMenuLabel>
+      {hasOptionRows ? (
+        <DropdownMenuLabel className={dropdownMenuSectionLabel}>{copy.options}</DropdownMenuLabel>
+      ) : null}
       {showThinkingToggle ? (
         <DropdownMenuItem className={dropdownMenuRow} onSelect={event => event.preventDefault()}>
           {copy.thinking}
@@ -206,7 +209,7 @@ export function ModelOptionsContent({
       ) : null}
       {reasoning ? (
         <>
-          <DropdownMenuSeparator className="mx-0" />
+          {hasOptionRows ? <DropdownMenuSeparator className="mx-0" /> : null}
           <DropdownMenuLabel className={dropdownMenuSectionLabel}>{copy.effort}</DropdownMenuLabel>
           <DropdownMenuRadioGroup onValueChange={value => onSetOptions({ effort: value })} value={effortValue}>
             {REASONING_EFFORTS.filter(value => modelEffortAllowed(provider, model, value)).map(value => (

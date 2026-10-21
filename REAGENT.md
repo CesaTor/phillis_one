@@ -13,6 +13,7 @@ HERMES_HOME=$PWD/.hermes-sandbox/hermes-home bash -c 'source ./activate'
 
 # dev, isolated from any installed Hermes (own HERMES_HOME, userData, app name)
 cd apps/desktop
+HERMES_DESKTOP_HERMES=$PWD/../../.hermes/bin/hermes \
 HERMES_DISTRIBUTION=reagent HERMES_DEV_SANDBOX_NAME=ReAgentDev \
   ../../scripts/dev-sandbox.sh --persistent -- npm run dev
 
@@ -83,5 +84,5 @@ statusbar item appeared.
   `UPSTREAM_DEFAULT_SOUL` or the seed silently stops renaming the default bot.
 - Auxiliary tasks need no seed: `auxiliary.*.provider: auto` already uses the main model
   (Hive). Messaging and kanban tools are already off for the agent; cron stays on.
-- Backend-generated copy (e.g. the "not connected to any AI provider" notice) is not
-  rebranded.
+- Backend-generated copy is not rebranded; onboarding hides the backend's launch notice,
+  but other backend messages can still say Hermes.

@@ -7,6 +7,7 @@ import {
 } from '@hermes/shared'
 import { map, type MapStore } from 'nanostores'
 
+import { brandText } from '@/distribution/branding'
 import type { HermesApiRequest } from '@/global'
 
 import { CANONICAL_GATEWAY_PROTOCOL, CanonicalDesktopProtocol, canonicalProfile, canonicalPromptParams, canonicalSessionKey, recordCanonicalOwner, splitRewindSubmit } from './canonical-protocol'
@@ -34,7 +35,7 @@ const DEFAULT_GATEWAY_REQUEST_TIMEOUT_MS = 30_000
 // ever fires when the turn itself would have been abandoned server-side.
 export const PROMPT_SUBMIT_REQUEST_TIMEOUT_MS = 1_800_000
 
-export const GATEWAY_NOT_CONNECTED_MESSAGE = 'Hermes gateway is not connected'
+export const GATEWAY_NOT_CONNECTED_MESSAGE = brandText('Hermes gateway is not connected')
 
 // Canonical shared prompts (`gateway/session_pending_controls.py`) travel as
 // `approval.request` / `clarify.request` EVENTS keyed by `prompt_id` and are
