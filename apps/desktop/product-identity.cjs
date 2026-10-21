@@ -90,6 +90,9 @@ const identity = {
   cliName,
   msixAppIdWithOrg: `${reagent ? 'ReQurv' : 'NousResearch'}.${name.pascal}${pascalSuffix}`,
   iconDir: reagent ? 'assets/reagent' : 'assets',
+  // ReAgent keeps its own state (~/.reagent): it must never share config,
+  // memories, sessions or the gateway with a Hermes install on the machine.
+  hermesHomeName: reagent ? 'reagent' : 'hermes',
   ...(store
     ? {
         storeMsix: {

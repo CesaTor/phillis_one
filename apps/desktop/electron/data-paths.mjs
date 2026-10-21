@@ -23,13 +23,14 @@ function normalizeHermesHomeRoot(hermesHome, pathModule) {
   return resolved
 }
 
-export function platformDefaultHermesHome(home, env = process.env, platform = process.platform) {
+// homeName is the product identity's `hermesHomeName` (a distribution's own home).
+export function platformDefaultHermesHome(home, env = process.env, platform = process.platform, homeName = 'hermes') {
   const suffix = env.HERMES_DATA_DIR_SUFFIX || ''
   if (platform === 'win32') {
     const base = (env.LOCALAPPDATA || '').trim() || path.win32.join(home, 'AppData', 'Local')
-    return path.win32.join(base, 'hermes') + suffix
+    return path.win32.join(base, homeName) + suffix
   }
-  return path.posix.join(home, '.hermes') + suffix
+  return path.posix.join(home, `.${homeName}`) + suffix
 }
 
 export function resolveDesktopUserData(defaultPath, env = process.env) {
@@ -38,7 +39,7 @@ export function resolveDesktopUserData(defaultPath, env = process.env) {
     : defaultPath + (env.HERMES_DATA_DIR_SUFFIX || '')
 }
 
-export function resolveDesktopHermesHome({ home, env = process.env, platform = process.platform, directoryExists = () => false, readWindowsHome = () => null }) {
+export function resolveDesktopHermesHome({ home, env = process.env, platform = process.platform, directoryExists = () => false, readWindowsHome = () => null, homeName = 'hermes' }) {
   const paths = platform === 'win32' ? path.win32 : path.posix
   if (env.HERMES_HOME) {
     return normalizeHermesHomeRoot(env.HERMES_HOME, paths)
@@ -54,10 +55,10 @@ export function resolveDesktopHermesHome({ home, env = process.env, platform = p
       return normalizeHermesHomeRoot(registryHome, paths)
     }
   }
-  const defaultHome = platformDefaultHermesHome(home, env, platform)
+  const defaultHome = platformDefaultHermesHome(home, env, platform, homeName)
   // Keep the legacy migration for ordinary installs, not isolated suffix runs.
   if (platform === 'win32' && !env.HERMES_DATA_DIR_SUFFIX) {
-    const legacy = paths.join(home, '.hermes')
+    const legacy = paths.join(home, `.${homeName}`)
     if (!directoryExists(defaultHome) && directoryExists(legacy)) {
       return legacy
     }

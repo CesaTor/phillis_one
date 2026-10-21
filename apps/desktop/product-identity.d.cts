@@ -19,6 +19,9 @@ interface ProductIdentity {
   msixAppIdWithOrg: string
   /** App-icon directory (icon.png/.icns/.ico, icon-mac.png): "assets", or a distribution's own. */
   iconDir: string
+  /** Default Hermes home: `~/.<name>` (macOS/Linux), `%LOCALAPPDATA%\<name>` (Windows). "hermes"
+   *  upstream, a distribution's own otherwise. Absent on channel-build identities (= "hermes"). */
+  readonly hermesHomeName?: string
   /** R2 identity token on channel builds; absent on legacy products. */
   readonly token?: string
   /** Channel subscription for channel builds; legacy electron-updater label otherwise. Stable tags:

@@ -219,7 +219,7 @@ import type { RosterProfileMetadata } from './connection-registry'
 import { liveWindowState, overlayWindowState } from './connection-window-state'
 import { describeCrashReason, installCrashForensics } from './crash-forensics'
 import { adoptServedDashboardToken } from './dashboard-token'
-import { resolveDesktopHermesHome, resolveDesktopUserData } from './data-paths'
+import { resolveDesktopUserData } from './data-paths'
 import { registerDeepLinkProtocol as registerDeepLinkProtocolWith } from './deep-link-protocol'
 import { loadOrCreateInstallationId, sshOwnershipId } from './desktop-installation'
 import { formatDesktopLogLine, formatLogStamp } from './desktop-log-line'
@@ -450,6 +450,7 @@ import {
 } from './primary-backend-startup'
 import { rehomePrimaryConnection } from './primary-connection-rehome'
 import { PrimaryProfilePin, resolveLaunchProfile } from './primary-profile-pin'
+import { claimProductHermesHome, productUserLauncherInstall } from './product-home'
 import { applyDesktopIdentity, PRODUCT_IDENTITY } from './product-identity'
 import {
   assertLocalProfileCanStart,
@@ -629,8 +630,7 @@ import {
   resolveStagedUpdaterBinary,
   resolveVenvDir,
   spawnUpdaterProcess,
-  stagedUpdaterSupportsPrewrittenMarker,
-  userLauncherInstallRoot
+  stagedUpdaterSupportsPrewrittenMarker
 } from './updater-process'
 import { AppInstallerStrategy } from './updater/app-installer'
 import { createChannelAppInstallerStrategy } from './updater/app-installer'
@@ -1282,7 +1282,7 @@ if (process.env.HERMES_DESKTOP_TMPDIR) {
   delete process.env.HERMES_DESKTOP_TMPDIR
 }
 
-const HERMES_HOME: string = resolveDesktopHermesHome({
+const HERMES_HOME: string = claimProductHermesHome({
   home: app.getPath('home'),
   directoryExists,
   readWindowsHome: (): string | null => readWindowsUserEnvVar('HERMES_HOME')
@@ -5142,7 +5142,7 @@ async function resolveHermesBackend(backendArgs: string[]): Promise<ResolvedHerm
     //    fixed user-bin location: a Finder/Dock launch inherits a PATH without
     //    ~/.local/bin. The reported root is then resolved and probed like any
     //    installed runtime; HERMES_DESKTOP_IGNORE_EXISTING=1 skips it too.
-    const userInstall: ReturnType<typeof userLauncherInstallRoot> = userLauncherInstallRoot(IS_WINDOWS, HERMES_HOME)
+    const userInstall: ReturnType<typeof productUserLauncherInstall> = productUserLauncherInstall(IS_WINDOWS, HERMES_HOME)
 
     if (userInstall) {
       const userBackend: SourceBackend | null = await installedRuntimeGate.resolve(userInstall.root, () =>

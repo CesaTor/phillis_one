@@ -29,11 +29,12 @@ Without `HERMES_DISTRIBUTION` the tree builds upstream Hermes, unchanged.
 |---|---|---|
 | Surface policy (allowlists) | `apps/desktop/src/distribution/index.ts` | the one place to let a feature in |
 | Product names in copy | `apps/desktop/src/distribution/branding.ts` | applied to the resolved i18n catalog |
-| App identity | `apps/desktop/product-identity.cjs` | name, appId, CLI, no Nous release feed, `iconDir` |
+| App identity | `apps/desktop/product-identity.cjs` | name, appId, CLI, no Nous release feed, `iconDir`, `hermesHomeName` |
+| Own home (`~/.reagent`, `%LOCALAPPDATA%\reagent`) | `apps/desktop/electron/product-home.ts` | default home from `hermesHomeName`; exported as `HERMES_HOME` to every child; never adopts a Hermes install's runtime |
 | Brand assets | `apps/desktop/assets/reagent/` (app icons, sources, `generate.py`), `apps/desktop/public/reagent/` (in-app mark, light/dark logo) | swapped in by `iconDir`, `distributionAsset`, `DistributionLogo` |
 | First-run seeds | `apps/desktop/src/distribution/seed.ts` | names the unnamed `default` bot "ReQurv" |
 | ReQurv Hive provider | `plugins/model-providers/requrv-hive/` | OpenAI-compatible, `REQURV_HIVE_API_KEY`, `requrv-small-3.8` (256k) |
-| Contract tests | `apps/desktop/src/distribution/*.test.ts`, `tests/providers/test_requrv_hive_profile.py` | |
+| Contract tests | `apps/desktop/src/distribution/*.test.ts`, `apps/desktop/electron/product-home.test.ts`, `tests/providers/test_requrv_hive_profile.py` | |
 
 A model's reasoning levels live in two places that must agree: `_MODEL_EFFORTS` in the
 provider plugin (what reaches the wire) and `modelEfforts` in `distribution/index.ts`
@@ -44,6 +45,19 @@ Everything else is a one-line gate at an upstream choke point: routes, sidebar n
 command palette, settings nav and search, statusbar, bundled plugins, model catalog,
 OAuth list, onboarding key options, remote-connection entry points, shared metrics,
 composer voice. `git grep -n "@/distribution"` lists them all.
+
+## Its own home
+
+ReAgent never shares state with a Hermes install on the same machine. Its home is
+`~/.reagent` (`%LOCALAPPDATA%\reagent` on Windows), from the identity's `hermesHomeName`:
+config, memories, profiles, sessions, logs (`logs/desktop.log`, `agent.log`), the gateway
+(its control socket and spawn ledger are keyed on the home) and the installed runtime
+(`~/.reagent/hermes-agent`). The desktop exports that home as `HERMES_HOME`, so every child
+it spawns (backend, gateway, `--version` probes, installer, terminals) uses it too. It
+never adopts a Hermes runtime: not `~/.hermes/hermes-agent`, not the install a
+`~/.local/bin/hermes` launcher reports. An explicit `HERMES_HOME` still wins (the dev
+sandbox sets one), including a Windows user-scope one set with `setx`, which is
+process-wide by nature.
 
 ## Rules that keep upstream syncs cheap
 
@@ -72,9 +86,22 @@ statusbar item appeared.
 
 ## Known gaps
 
-- Packaged builds still resolve `~/.hermes` as the backend home and the first-run
-  installer fetches upstream Hermes; ReAgent needs its own home and a bundled payload
-  built from this branch.
+- The first-run installer still fetches upstream Hermes: `bootstrap-runner.ts` downloads
+  `install.sh`/`install.ps1` from NousResearch at the build's commit (a `reagent` commit
+  upstream does not have) and the script clones NousResearch/hermes-agent, so it would put
+  upstream Hermes (no Hive plugin) into `~/.reagent/hermes-agent` and publish
+  `~/.local/bin/hermes` over a Hermes install's launcher. Ship ReAgent as a bundled payload
+  built from this branch (`HERMES_DESKTOP_VARIANT=bundled`), or give the identity an
+  installer source (fork URL + branch, no user-bin publish) — both outside a one-line gate.
+- The Python backend has no distribution concept: without `HERMES_HOME` it resolves
+  `~/.hermes`. Every desktop-spawned child gets ReAgent's home, but a `hermes` CLI run from a
+  user's own terminal (e.g. a bundled payload's `~/.local/bin` link) would not.
+- On Linux the pre-launch read of `desktop.electron_flags` (`electron/entry.ts`) still looks
+  in `~/.hermes/config.yaml` when `HERMES_HOME` is unset: entry must not load the product
+  identity before main (the bundled-entry test runs it outside the app tree).
+- Remote-only paths keep upstream's home: SSH control sockets (`ssh-connection.ts`,
+  `~/.hermes/desktop-ssh`) and the remote `~/.hermes` probes. ReAgent has remote
+  connections off. UI copy that prints `~/.hermes` paths is not rebranded either.
 - No release feed: auto-update is off until ReQurv hosts one.
 - Backend prompt copy still names Hermes: every session carries upstream's help guidance
   ("You run on Hermes Agent (by Nous Research)", agent/prompt_builder.py), and bot profiles
