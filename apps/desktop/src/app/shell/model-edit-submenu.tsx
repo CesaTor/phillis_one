@@ -11,6 +11,7 @@ import {
   DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu'
 import { Switch } from '@/components/ui/switch'
+import { modelEffortAllowed } from '@/distribution'
 import { useI18n } from '@/i18n'
 import { isThinkingEnabled, reasoningEffortClamp, resolveReasoningEffort } from '@/lib/reasoning-effort'
 
@@ -121,8 +122,10 @@ export function ModelOptionsContent({
   serviceTier,
   ultrafastSupported = false,
   isActive,
+  model,
   onSelectModel,
   onSetOptions,
+  provider,
   reasoning
 }: ModelEditSubmenuProps) {
   const { t } = useI18n()
@@ -131,7 +134,7 @@ export function ModelOptionsContent({
   const effortValue = resolveReasoningEffort(effort, defaultEffort)
   const clamp = reasoningEffortClamp(effortValue, effortWire)
   const thinkingOn = isThinkingEnabled(effort, defaultEffort)
-  const showThinkingToggle = reasoning && canDisableReasoning !== false
+  const showThinkingToggle = reasoning && canDisableReasoning !== false && modelEffortAllowed(provider, model, 'none')
 
   const setFast = (enabled: boolean) => {
     if (fastControl.kind === 'variant') {
@@ -206,7 +209,7 @@ export function ModelOptionsContent({
           <DropdownMenuSeparator className="mx-0" />
           <DropdownMenuLabel className={dropdownMenuSectionLabel}>{copy.effort}</DropdownMenuLabel>
           <DropdownMenuRadioGroup onValueChange={value => onSetOptions({ effort: value })} value={effortValue}>
-            {REASONING_EFFORTS.map(value => (
+            {REASONING_EFFORTS.filter(value => modelEffortAllowed(provider, model, value)).map(value => (
               <DropdownMenuRadioItem
                 className={dropdownMenuRow}
                 key={value}

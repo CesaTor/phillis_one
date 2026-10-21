@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { noteActiveTreeGroup, revealTreePane } from '@/components/pane-shell/tree/store'
 import { registry } from '@/contrib/registry'
 import type { Contribution } from '@/contrib/types'
+import { viewAllowed } from '@/distribution'
 import type { InterfaceTier } from '@/store/interface-mode'
 
 type NavigateLike = (to: string, options?: { replace?: boolean }) => void
@@ -245,7 +246,9 @@ export function appViewForPath(pathname: string): AppView {
     return 'extension'
   }
 
-  return APP_VIEW_BY_PATH.get(path) ?? 'chat'
+  const view = APP_VIEW_BY_PATH.get(path)
+
+  return view && viewAllowed(view) ? view : 'chat'
 }
 
 /** Does `to` land on a full page rendered INSIDE the workspace pane

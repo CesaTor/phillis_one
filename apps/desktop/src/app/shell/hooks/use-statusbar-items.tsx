@@ -17,6 +17,7 @@ import { $paneVisible } from '@/components/pane-shell/tree/store'
 import { Badge } from '@/components/ui/badge'
 import { Codicon } from '@/components/ui/codicon'
 import { GlyphSpinner } from '@/components/ui/glyph-spinner'
+import { statusbarItemAllowed } from '@/distribution'
 import { useI18n } from '@/i18n'
 import { displayPath, pathLeaf } from '@/lib/display-path'
 import { statusBarGatewayHealth } from '@/lib/gateway-health-pill'
@@ -760,12 +761,12 @@ export function useStatusbarItems({
   )
 
   const leftStatusbarItems = useMemo(
-    () => [...coreLeftStatusbarItems, ...extraLeftItems],
+    () => [...coreLeftStatusbarItems.filter(statusbarItemAllowed), ...extraLeftItems],
     [coreLeftStatusbarItems, extraLeftItems]
   )
 
   const statusbarItems = useMemo(
-    () => [...extraRightItems, ...coreRightStatusbarItems],
+    () => [...extraRightItems, ...coreRightStatusbarItems.filter(statusbarItemAllowed)],
     [coreRightStatusbarItems, extraRightItems]
   )
 

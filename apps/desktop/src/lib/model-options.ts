@@ -1,5 +1,6 @@
 import type { ModelCapabilities, ModelOptionProvider, ModelOptionsResult } from '@hermes/shared'
 
+import { filterModelOptions } from '@/distribution'
 import { getGlobalModelOptions, type HermesGateway } from '@/hermes'
 
 type CatalogProviderIdentity = Partial<Pick<ModelOptionProvider, 'aliases' | 'name'>> &
@@ -143,7 +144,12 @@ function restModelOptions(
   return profileKey ? getGlobalModelOptions(opts, profileKey) : getGlobalModelOptions(opts)
 }
 
-export async function requestModelOptions({
+/** The catalog this distribution may show (see `filterModelOptions`). */
+export async function requestModelOptions(request: ModelOptionsRequest): Promise<ModelOptionsResult> {
+  return filterModelOptions(await requestCatalogModelOptions(request))
+}
+
+async function requestCatalogModelOptions({
   explicitOnly = true,
   gateway,
   profile,

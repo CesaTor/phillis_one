@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { brandText } from '@/distribution/branding'
 import { useI18n } from '@/i18n'
 import { capitalize, normalize } from '@/lib/text'
 
@@ -146,7 +147,7 @@ function pickCopy(copies: IntroCopy[], seed = 0): IntroCopy {
   return copies[Math.abs(seed) % copies.length] || FALLBACK_COPY[0]
 }
 
-const WORDMARK = 'HERMES AGENT'
+const WORDMARK = brandText('HERMES AGENT')
 
 function resolveCopy(personality?: string, seed?: number): IntroCopy {
   const personalityKey = normalizeKey(personality)

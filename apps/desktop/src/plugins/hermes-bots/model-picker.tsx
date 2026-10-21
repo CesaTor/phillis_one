@@ -11,6 +11,7 @@ import {
   catalogProviderMatches,
   GlyphSpinner,
   Input,
+  providerAllowed,
   Select,
   SelectContent,
   SelectItem,
@@ -129,7 +130,7 @@ export function ModelPicker({ bot = null, value, onChange, placeholderModel }: M
   // Declaring them after a return trips React error #310.
   const NONE = '__default__'
   const CUSTOM = '__custom__'
-  const providers = (data?.providers || []).filter(p => p && p.slug)
+  const providers = (data?.providers || []).filter(p => p && p.slug && providerAllowed(p.slug))
 
   const isKnown =
     !value.provider || value.provider === NONE || providers.some(p => catalogProviderMatches(p, value.provider))

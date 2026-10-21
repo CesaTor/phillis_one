@@ -5,6 +5,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router'
 import { codiconIcon } from '@/components/ui/codicon'
 import { KbdCombo } from '@/components/ui/kbd'
 import { Tip } from '@/components/ui/tooltip'
+import { filterSettingsNav, settingsViewAllowed } from '@/distribution'
 import { getHermesConfigDefaults, getHermesConfigRecord, saveHermesConfig } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
@@ -69,7 +70,7 @@ import { resolveSettingsSubpage, settingsSubpageIcon, settingsSubpages } from '.
 import type { SettingsPageProps, SettingsView as SettingsViewId } from './types'
 import { vaultOwnerKey, VaultSettings } from './vault-settings'
 
-const SETTINGS_VIEWS: readonly SettingsViewId[] = [
+const ALL_SETTINGS_VIEWS: readonly SettingsViewId[] = [
   ...SECTIONS.map(s => `config:${s.id}` as SettingsViewId),
   'providers',
   'gateway',
@@ -85,6 +86,8 @@ const SETTINGS_VIEWS: readonly SettingsViewId[] = [
   'plugins',
   'about'
 ]
+
+const SETTINGS_VIEWS = ALL_SETTINGS_VIEWS.filter(settingsViewAllowed)
 
 // Pages that take nothing but the resolved sub-page.
 const SUBPAGE_VIEWS: Partial<Record<SettingsViewId, ComponentType<{ subpage?: string }>>> = {
@@ -241,7 +244,7 @@ export function SettingsView({ onClose, onConfigSaved, onMainModelChanged }: Set
     }
   }
 
-  const navGroups: OverlayNavGroup[] = useMemo(
+  const allNavGroups: OverlayNavGroup[] = useMemo(
     () =>
       (
         [
@@ -449,6 +452,7 @@ export function SettingsView({ onClose, onConfigSaved, onMainModelChanged }: Set
     ]
   )
 
+  const navGroups = filterSettingsNav(allNavGroups)
   const activeGroup = navGroups.find(group => group.active)
   const activeChild = activeGroup?.children?.find(child => child.active)
 

@@ -31,9 +31,21 @@ if (!['', 'light', 'bundled', 'store'].includes(variant)) {
 // variant: same Electron app (displayName/appId/appNamePascal -> shared
 // userData + single-instance lock with the out-of-store install), different
 // MSIX package identity. The Store re-signs on submission.
+// HERMES_DISTRIBUTION is the product, orthogonal to the variant (the payload
+// shape): `reagent` is ReQurv's distribution — its own name, app identity and
+// state, and no Nous release feed. The renderer reads the same variable
+// (src/distribution) to curate its surface.
+const distribution = process.env.HERMES_DISTRIBUTION || ''
+if (!['', 'reagent'].includes(distribution)) {
+  throw new Error(`Unknown HERMES_DISTRIBUTION ${distribution}. expected one of (empty), reagent`)
+}
+const reagent = distribution === 'reagent'
+
 const store = variant === 'store'
 const light = variant === 'light'
-const name = variants[store ? 'bundled' : (variant || '')]
+const name = reagent
+  ? { display: 'ReAgent', kebab: 'reagent', pascal: 'ReAgent' }
+  : variants[store ? 'bundled' : (variant || '')]
 
 // The electron-updater feed channel this build PUBLISHES to. A canary
 // tag (vX.Y.Z+canary.YYYYMMDDTHHMMSSZ) writes canary.yml / light-canary.yml;
@@ -54,7 +66,10 @@ const displayName = buildCommit
 
 const kebabSuffix = buildCommit ? `-${buildCommit}` : canary ? '-canary' : ''
 const pascalSuffix = buildCommit ? `Commit${buildCommit}` : canary ? 'Canary' : ''
-const cliName = `${light ? 'hermes-light' : 'hermes'}${kebabSuffix}`
+const cliName = `${reagent ? 'reagent' : light ? 'hermes-light' : 'hermes'}${kebabSuffix}`
+if (reagent && store) {
+  throw new Error('ReAgent has no Store identity yet')
+}
 if (store && (canary || buildCommit)) {
   throw new Error('Store packaging is only eligible for stable releases')
 }
@@ -66,14 +81,14 @@ const identity = {
   store,
   light,
   displayName,
-  appId: `com.nousresearch.${name.kebab}${kebabSuffix}`,
-  // Store and commit builds do not publish a release feed.
-  channel: store || buildCommit ? null : light ? (canary ? 'light-canary' : 'light') : (canary ? 'canary' : 'latest'),
+  appId: `${reagent ? 'ai.requrv' : 'com.nousresearch'}.${name.kebab}${kebabSuffix}`,
+  // Store, commit and ReAgent builds do not publish to the Nous release feed.
+  channel: store || buildCommit || reagent ? null : light ? (canary ? 'light-canary' : 'light') : (canary ? 'canary' : 'latest'),
   appNamePascal: `${name.pascal}${pascalSuffix}`,
   artifactNamePascal: name.pascal,
   windowsExecutableName: kebabSuffix ? cliName : displayName,
   cliName,
-  msixAppIdWithOrg: `NousResearch.${name.pascal}${pascalSuffix}`,
+  msixAppIdWithOrg: `${reagent ? 'ReQurv' : 'NousResearch'}.${name.pascal}${pascalSuffix}`,
   ...(store
     ? {
         storeMsix: {

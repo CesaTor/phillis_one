@@ -7,6 +7,7 @@ import { ErrorIcon } from '@/components/ui/error-state'
 import { Loader } from '@/components/ui/loader'
 import { LogView } from '@/components/ui/log-view'
 import { Progress } from '@/components/ui/progress'
+import { remoteConnectionsAllowed } from '@/distribution'
 import type {
   DesktopBootstrapEvent,
   DesktopBootstrapStageDescriptor,
@@ -460,6 +461,7 @@ export function DesktopInstallOverlay({ enabled = true }: DesktopInstallOverlayP
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <button
               className="rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-4 text-left transition hover:bg-(--chrome-action-hover)"
+              hidden={!remoteConnectionsAllowed()}
               onClick={() => setRemoteOpen(true)}
               type="button"
             >

@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { RowButton } from '@/components/ui/row-button'
 import { SearchField } from '@/components/ui/search-field'
 import { Tip } from '@/components/ui/tooltip'
+import { providerAllowed } from '@/distribution'
 import { disconnectOAuthProvider, listOAuthProviders } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Check, ChevronDown, ChevronRight, KeyRound, Loader2, Terminal, Trash2 } from '@/lib/icons'
@@ -98,7 +99,7 @@ function buildProviderKeyGroups(vars: Record<string, EnvVarInfo>): ProviderKeyGr
       // the same identity the CLI picker uses; fall back to the prefix guess.
       const name = scopedInfo.provider_label?.trim() || scopedInfo.provider?.trim() || providerGroup(key)
 
-      if (name === 'Other') {
+      if (name === 'Other' || !providerAllowed(scopedInfo.provider)) {
         continue
       }
 
@@ -554,7 +555,9 @@ export function ProvidersSettings({
     return (
       <SettingsContent>
         <SettingsProfileScope className="mb-5" />
-        <LocalEndpointRow onOpen={reason => startManualLocalEndpoint(reason, scopeProfile)} />
+        {providerAllowed('custom') ? (
+          <LocalEndpointRow onOpen={reason => startManualLocalEndpoint(reason, scopeProfile)} />
+        ) : null}
         {keyGroups.length > 0 ? (
           <div className="grid gap-3">
             <SearchField

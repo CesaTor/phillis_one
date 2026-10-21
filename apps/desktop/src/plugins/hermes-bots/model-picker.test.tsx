@@ -38,7 +38,8 @@ const { hostMock } = vi.hoisted(() => ({
 
 vi.mock('@hermes/plugin-sdk', async () => {
   const { useQuery } = await import('@tanstack/react-query')
-  const { catalogProviderMatches, useI18n } = await vi.importActual<typeof HermesSdk>('@hermes/plugin-sdk')
+  const { catalogProviderMatches, providerAllowed, useI18n } =
+    await vi.importActual<typeof HermesSdk>('@hermes/plugin-sdk')
 
   return {
     Button: (props: React.ComponentProps<'button'>) => <button {...props} />,
@@ -46,6 +47,7 @@ vi.mock('@hermes/plugin-sdk', async () => {
     GlyphSpinner: () => <span data-testid="spinner" />,
     host: hostMock,
     Input: (props: React.ComponentProps<'input'>) => <input {...props} />,
+    providerAllowed,
     Select: ({ children }: { children: ReactNode }) => <div>{children}</div>,
     SelectContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
     SelectItem: ({ children }: { children: ReactNode }) => <div>{children}</div>,

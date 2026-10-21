@@ -4,6 +4,7 @@ import { useCallback, useEffect } from 'react'
 
 import { useGatewayRequest } from '@/app/gateway/hooks/use-gateway-request'
 import { $pluginRecords } from '@/contrib/plugins-store'
+import { distribution, filterSettingsSearch } from '@/distribution'
 import { getEnvVars, getHermesConfigSchema } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { type IconComponent, Monitor, Package, Settings2, Wrench } from '@/lib/icons'
@@ -175,10 +176,10 @@ export function useSettingsSearchCatalog(enabled: boolean) {
     .filter(entry => !settingLabels.has(`${entry.context}\u0000${entry.label}`))
 
   return {
-    subpageEntries,
-    settingEntries,
-    configEntries,
-    credentialEntries,
-    pluginEntries
+    subpageEntries: filterSettingsSearch(subpageEntries),
+    settingEntries: filterSettingsSearch(settingEntries),
+    configEntries: filterSettingsSearch(configEntries),
+    credentialEntries: filterSettingsSearch(credentialEntries),
+    pluginEntries: distribution() === 'hermes' ? pluginEntries : []
   }
 }

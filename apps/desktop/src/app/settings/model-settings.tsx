@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
+import { modelEffortAllowed } from '@/distribution'
 import {
   getAuxiliaryModels,
   getGlobalModelInfo,
@@ -300,6 +301,7 @@ interface ModelSettingsProps {
 
 function MainModelDefaults({
   effortValue,
+  mainModel,
   fastOn,
   fastSupported,
   onChange,
@@ -308,6 +310,7 @@ function MainModelDefaults({
   ultrafastSupported
 }: {
   effortValue: string
+  mainModel: { model: string; provider: string }
   fastOn: boolean
   fastSupported: boolean
   onChange: (key: string, value: boolean | string) => Promise<void>
@@ -329,7 +332,9 @@ function MainModelDefaults({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {REASONING_EFFORT_VALUES.map(value => (
+                {REASONING_EFFORT_VALUES.filter(value =>
+                  modelEffortAllowed(mainModel.provider, mainModel.model, value)
+                ).map(value => (
                   <SelectItem key={value} value={value}>
                     {value === 'none' ? m.reasoningOff : t.shell.modelOptions[value]}
                   </SelectItem>
@@ -1171,6 +1176,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
               effortValue={effortValue}
               fastOn={fastOn}
               fastSupported={fastSupported}
+              mainModel={mainModel}
               onChange={writeAgentDefault}
               reasoningSupported={reasoningSupported}
               speedValue={speedValue}

@@ -24,6 +24,8 @@ import {
 } from '@hermes/shared/i18n'
 import { atom } from 'nanostores'
 
+import { brandTranslations } from '@/distribution/branding'
+
 import { isBundledLocale, TRANSLATIONS } from './catalog'
 import type { Locale, Translations } from './types'
 
@@ -243,6 +245,7 @@ export function resolveTranslations(locale: Locale): Translations {
     }
   }
 
+  value = brandTranslations(value)
   resolved.set(locale, { version, value })
 
   return value

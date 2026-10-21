@@ -1,6 +1,8 @@
 import type { SharedMetricsConsentResult } from '@hermes/shared'
 import { atom } from 'nanostores'
 
+import { sharedMetricsAllowed } from '@/distribution'
+
 import { recordOnboarding, setDesktopMetricsGate } from './desktop-metrics'
 
 /** Public page describing exactly what shared metrics contain and how consent windows work. */
@@ -44,6 +46,10 @@ function isConsent(value: unknown): value is SharedMetricsConsent {
  * which every caller treats as "don't ask".
  */
 export async function readSharedMetricsConsent(request: SharedMetricsRequester): Promise<SharedMetricsConsent | null> {
+  if (!sharedMetricsAllowed()) {
+    return null
+  }
+
   try {
     const consent = await request<SharedMetricsConsent>('shared_metrics.status')
 

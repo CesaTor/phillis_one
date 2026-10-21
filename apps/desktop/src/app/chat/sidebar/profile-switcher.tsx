@@ -43,6 +43,7 @@ import { edgeMask, scrollEdges } from '@/components/ui/fade-scroll'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { ProfileGlyph } from '@/components/ui/profile-glyph'
 import { Tip, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { remoteConnectionsAllowed } from '@/distribution'
 import type { DesktopRegistryConnection } from '@/global'
 import { getProfileSoul, updateProfileSoul } from '@/hermes'
 import { useResizeObserver } from '@/hooks/use-resize-observer'
@@ -664,7 +665,7 @@ export function ProfileRail() {
       {/* Multi-gateway discoverability: before a second source exists, a plug
           pinned beside Manage deep-links to the unified Gateways page. Once
           there are several sources, the same action lives in their selector. */}
-      {!multipleConnections && (
+      {!multipleConnections && remoteConnectionsAllowed() && (
         <ProfilePill
           active={false}
           glyph="plug"

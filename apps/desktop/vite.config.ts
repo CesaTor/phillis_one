@@ -134,6 +134,8 @@ const emojibaseAssets = () => ({
 
 export default defineConfig(({ command }) => ({
   base: './',
+  // HERMES_DISTRIBUTION picks the product (src/distribution); VITE_ stays Vite's default.
+  envPrefix: ['VITE_', 'HERMES_DISTRIBUTION'],
   plugins: [react(), cachedCompilerPass(command), tailwindcss(), emojibaseAssets()],
   css: {
     // Pin an explicit (empty) PostCSS config. Tailwind is handled entirely by

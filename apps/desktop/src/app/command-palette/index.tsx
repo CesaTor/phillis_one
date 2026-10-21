@@ -19,6 +19,7 @@ import { codiconIcon } from '@/components/ui/codicon'
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { HighlightMatches } from '@/components/ui/highlight-matches'
 import { KbdCombo } from '@/components/ui/kbd'
+import { filterPaletteGroups } from '@/distribution'
 import { getHermesConfigRecord, listAllProfileSessions } from '@/hermes'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { useI18n } from '@/i18n'
@@ -1347,7 +1348,7 @@ function CommandPaletteBody({ onExited }: { onExited: () => void }) {
   // likely thing meant. Everything above is either always-present chrome or a
   // list the search itself asked for.
   const groups = useMemo(
-    () => [...baseGroups, ...searchGroups, ...branchGroup],
+    () => filterPaletteGroups([...baseGroups, ...searchGroups, ...branchGroup]),
     [baseGroups, branchGroup, searchGroups]
   )
 

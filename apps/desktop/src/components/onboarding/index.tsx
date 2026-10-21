@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
+import { distributionKeyOptions } from '@/distribution'
 import { getGlobalModelOptions } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Check, ChevronDown, ChevronLeft, KeyRound, Loader2 } from '@/lib/icons'
@@ -84,7 +85,7 @@ export interface ApiKeyOption {
 
 // Curated order mirrors CANONICAL_PROVIDERS: Fireworks sits #2 overall (after
 // Nous Portal OAuth), ahead of OpenRouter and the rest of the key catalog.
-const API_KEY_OPTIONS: ApiKeyOption[] = [
+const API_KEY_OPTIONS: ApiKeyOption[] = distributionKeyOptions([
   {
     id: 'fireworks',
     name: 'Fireworks AI',
@@ -122,7 +123,7 @@ const API_KEY_OPTIONS: ApiKeyOption[] = [
     docsUrl: 'https://github.com/NousResearch/hermes-agent#bring-your-own-endpoint',
     placeholder: 'http://127.0.0.1:8000/v1'
   }
-]
+])
 
 // Build the FULL API-key provider catalog from the backend model options so the
 // onboarding / Providers key form lists every `api_key` provider `hermes model`
