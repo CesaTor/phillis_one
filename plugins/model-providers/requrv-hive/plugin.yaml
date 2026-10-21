@@ -1,0 +1,5 @@
+name: requrv-hive-provider
+kind: model-provider
+version: 1.0.0
+description: ReQurv Hive OpenAI-compatible inference
+author: ReQurv
