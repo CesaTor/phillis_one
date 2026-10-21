@@ -71,12 +71,15 @@ export function resolveAppIcon(
 export function appIconCandidates(opts: {
   isWindows: boolean
   appRoot: string
+  /** A distribution's own icon directory (product identity `iconDir`), tried first. */
+  iconDir?: string
   resourcesPath?: string
   unpackedPathFor: (p: string) => string
 }): string[] {
-  const { isWindows, appRoot, resourcesPath, unpackedPathFor } = opts
+  const { isWindows, appRoot, iconDir, resourcesPath, unpackedPathFor } = opts
 
   return [
+    ...(iconDir && iconDir !== 'assets' ? [path.join(appRoot, iconDir, isWindows ? 'icon.ico' : 'icon.png')] : []),
     ...(isWindows ? [path.join(resourcesPath ?? '', 'icon.ico'), path.join(appRoot, 'assets', 'icon.ico')] : []),
     // The unpacked on-disk copy first (dist/** is asarUnpack'ed), as resolveWebDist() does: statting
     // any path inside app.asar goes through Electron's asar fs.Stats shim, which emits Node's DEP0180

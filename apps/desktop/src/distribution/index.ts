@@ -15,12 +15,16 @@ import type { AppView } from '@/app/routes'
 export type DistributionId = 'hermes' | 'reagent'
 
 interface DistributionPolicy {
+  /** `public/` images this distribution replaces (upstream path → its own). */
+  assets: Readonly<Record<string, string>>
   /** Bundled plugins (`src/plugins/<id>`) allowed to register. */
   bundledPlugins: ReadonlySet<string>
   /** Env-var credentials searchable from settings search (provider keys included). */
   credentialKeys: RegExp
   /** The `default` profile's bot name until the user gives it a title. */
   defaultBotName: string
+  /** Full logo shown where upstream letters its wordmark (empty chat), per rendered theme. */
+  logo: null | Readonly<{ dark: string; light: string }>
   /** Upstream URLs this distribution answers itself (release notes, docs). Others open as-is. */
   links: Readonly<Record<string, string>>
   /** Reasoning levels per `<provider>/<model>` where narrower than the shared ladder. Mirrors the
@@ -49,9 +53,11 @@ interface DistributionPolicy {
 }
 
 const REAGENT: DistributionPolicy = {
+  assets: { 'nous-girl.png': 'reagent/mark.png', 'nous-girl-dark.png': 'reagent/mark.png' },
   bundledPlugins: new Set(['hermes-bots']),
   credentialKeys: /^REQURV_HIVE_/,
   defaultBotName: 'ReQurv',
+  logo: { dark: 'reagent/logo-dark.webp', light: 'reagent/logo-light.webp' },
   links: {
     // ReAgent ships from its fork's branch, not tagged releases: its commits are its notes.
     'https://github.com/NousResearch/hermes-agent/releases': 'https://github.com/CesaTor/phillis_one/commits/reagent'
@@ -178,6 +184,16 @@ export function distributionKeyOptions<O extends KeyOption>(upstream: O[]): O[] 
 /** Whether a model offers this reasoning level (`none` = thinking can be switched off). */
 export function modelEffortAllowed(provider: string, model: string, effort: string): boolean {
   return policy()?.modelEfforts[`${provider}/${model}`]?.has(effort) ?? true
+}
+
+/** A `public/` image path, or the one this distribution puts in its place. */
+export function distributionAsset(path: string): string {
+  return policy()?.assets[path] ?? path
+}
+
+/** The full logo for a rendered theme; null where upstream's lettering stays. */
+export function distributionLogo(mode: 'dark' | 'light'): null | string {
+  return policy()?.logo?.[mode] ?? null
 }
 
 /** `url`, or the page this distribution puts in its place. */

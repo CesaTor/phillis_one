@@ -12,8 +12,10 @@ import {
 import { brandText, brandTranslations } from './branding'
 
 import {
+  distributionAsset,
   distributionKeyOptions,
   distributionLink,
+  distributionLogo,
   filterModelOptions,
   filterPaletteGroups,
   filterSettingsNav,
@@ -42,6 +44,8 @@ describe('upstream Hermes (no distribution)', () => {
     expect(appViewForPath(MESSAGING_ROUTE)).toBe('messaging')
     expect(filterModelOptions(catalog).providers).toHaveLength(3)
     expect(remoteConnectionsAllowed()).toBe(true)
+    expect(distributionAsset('nous-girl.png')).toBe('nous-girl.png')
+    expect(distributionLogo('dark')).toBeNull()
     expect(distributionLink('https://github.com/NousResearch/hermes-agent/releases')).toBe(
       'https://github.com/NousResearch/hermes-agent/releases'
     )
@@ -89,6 +93,8 @@ describe('ReAgent', () => {
     reagent()
 
     expect(remoteConnectionsAllowed()).toBe(false)
+    expect(distributionAsset('nous-girl-dark.png')).toBe('reagent/mark.png')
+    expect(distributionLogo('light')).toBe('reagent/logo-light.webp')
     expect(distributionLink('https://github.com/NousResearch/hermes-agent/releases')).toBe(
       'https://github.com/CesaTor/phillis_one/commits/reagent'
     )

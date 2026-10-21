@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { brandText } from '@/distribution/branding'
+import { DistributionLogo } from '@/distribution/logo'
 import { useI18n } from '@/i18n'
 import { capitalize, normalize } from '@/lib/text'
 
@@ -177,7 +178,7 @@ export function Intro({ personality, seed }: IntroProps) {
       data-slot="aui_intro"
     >
       <div className="w-full min-w-0">
-        <Wordmark className="mb-1" text={WORDMARK} />
+        <DistributionLogo fallback={<Wordmark className="mb-1" text={WORDMARK} />} />
 
         <p className="m-0 text-center leading-normal tracking-tight">{body}</p>
       </div>

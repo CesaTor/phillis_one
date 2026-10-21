@@ -89,6 +89,7 @@ const identity = {
   windowsExecutableName: kebabSuffix ? cliName : displayName,
   cliName,
   msixAppIdWithOrg: `${reagent ? 'ReQurv' : 'NousResearch'}.${name.pascal}${pascalSuffix}`,
+  iconDir: reagent ? 'assets/reagent' : 'assets',
   ...(store
     ? {
         storeMsix: {

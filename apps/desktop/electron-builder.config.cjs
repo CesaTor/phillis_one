@@ -26,7 +26,8 @@ const {
   windowsExecutableName,
   channel,
   msixAppIdWithOrg,
-  token
+  token,
+  iconDir
 } = require('./product-identity.cjs')
 
 // `storeMsix` is optional on the identity type but guaranteed present when
@@ -85,7 +86,7 @@ module.exports = {
   // so it can't collide with the out-of-store MSIX of the same tag/arch, and
   // the release pipeline can keep the two apart.
   artifactName: `${store ? 'Store-' : ''}${artifactNamePascal}-\${version}-\${os}-\${arch}.\${ext}`,
-  icon: 'assets/icon',
+  icon: `${iconDir}/icon`,
   // The electron-updater feed. CI builds set CLOUDFLARE_R2_PUBLIC_URL (the R2
   // public bucket / custom domain) and publish there — the feed yml, blockmaps
   // and installers all live in the same flat R2 bucket, and electron-updater
@@ -133,7 +134,7 @@ module.exports = {
       ? [{ from: 'build/agent-payload', to: 'agent-payload' }]
       : []),
     {
-      from: 'assets/icon.ico',
+      from: `${iconDir}/icon.ico`,
       to: 'icon.ico'
     }
   ],
@@ -147,7 +148,8 @@ module.exports = {
     // electron-builder compiles `.icon` with actool >= 26 only, so hosts
     // without Xcode 26 fall back to the .icns alone (see scripts/mac-icon.cjs);
     // after-pack.mjs restores our full-resolution .icns either way.
-    icon: macIconResource(__dirname),
+    // A distribution's own artwork has no Icon Composer package: its .icns serves every macOS.
+    icon: iconDir === 'assets' ? macIconResource(__dirname) : `${iconDir}/icon.icns`,
     // The afterSign hook owns notarization, including keychain-profile builds.
     notarize: false,
     // The packaged client reads this generated app-update.yml by default.

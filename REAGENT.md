@@ -28,7 +28,8 @@ Without `HERMES_DISTRIBUTION` the tree builds upstream Hermes, unchanged.
 |---|---|---|
 | Surface policy (allowlists) | `apps/desktop/src/distribution/index.ts` | the one place to let a feature in |
 | Product names in copy | `apps/desktop/src/distribution/branding.ts` | applied to the resolved i18n catalog |
-| App identity | `apps/desktop/product-identity.cjs` | name, appId, CLI, no Nous release feed |
+| App identity | `apps/desktop/product-identity.cjs` | name, appId, CLI, no Nous release feed, `iconDir` |
+| Brand assets | `apps/desktop/assets/reagent/` (app icons, sources, `generate.py`), `apps/desktop/public/reagent/` (in-app mark, light/dark logo) | swapped in by `iconDir`, `distributionAsset`, `DistributionLogo` |
 | First-run seeds | `apps/desktop/src/distribution/seed.ts` | names the unnamed `default` bot "ReQurv" |
 | ReQurv Hive provider | `plugins/model-providers/requrv-hive/` | OpenAI-compatible, `REQURV_HIVE_API_KEY`, `requrv-small-3.8` (256k) |
 | Contract tests | `apps/desktop/src/distribution/*.test.ts`, `tests/providers/test_requrv_hive_profile.py` | |

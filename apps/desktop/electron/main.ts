@@ -1452,6 +1452,7 @@ const WINDOW_BUTTON_POSITION = {
 const APP_ICON_PATHS = appIconCandidates({
   isWindows: IS_WINDOWS,
   appRoot: APP_ROOT,
+  iconDir: PRODUCT_IDENTITY.iconDir,
   resourcesPath: process.resourcesPath,
   unpackedPathFor
 })
@@ -13812,7 +13813,7 @@ function createWindow() {
     // Packaged builds keep the bundle icon so macOS can style it (#73195).
     if (icon && shouldOverrideDockIcon({ platform: process.platform, isPackaged: app.isPackaged })) {
       // The window icon is full-bleed for Linux; the Dock wants the mac grid.
-      app.dock?.setIcon(resolveAppIcon([path.join(APP_ROOT, 'assets', 'icon-mac.png')]) ?? icon)
+      app.dock?.setIcon(resolveAppIcon([path.join(APP_ROOT, PRODUCT_IDENTITY.iconDir, 'icon-mac.png')]) ?? icon)
     }
   }
 

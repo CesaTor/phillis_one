@@ -14,6 +14,7 @@
 import path from 'node:path'
 import fs from 'node:fs'
 import { copyFile, mkdir, readdir } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { runPython } from '../../../scripts/build/python.mjs'
 
 import { assertPackagedBackendReadyArtifact, resolvePackagedAsarPath } from './backend-ready-artifact.mjs'
@@ -32,7 +33,8 @@ import { sanitizeTree } from './sanitize-pe-signatures.mjs'
  * @param {string} [appDir] the apps/desktop directory
  */
 export async function restoreLegacyMacIcon({ appOutDir, packager }, appDir = path.resolve(import.meta.dirname, '..')) {
-  await copyFile(path.join(appDir, 'assets', 'icon.icns'), path.join(packager.getResourcesDir(appOutDir), 'icon.icns'))
+  const { iconDir } = createRequire(import.meta.url)('../product-identity.cjs')
+  await copyFile(path.join(appDir, iconDir, 'icon.icns'), path.join(packager.getResourcesDir(appOutDir), 'icon.icns'))
 }
 
 /**
