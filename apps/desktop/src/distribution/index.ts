@@ -21,6 +21,8 @@ interface DistributionPolicy {
   credentialKeys: RegExp
   /** The `default` profile's bot name until the user gives it a title. */
   defaultBotName: string
+  /** Upstream URLs this distribution answers itself (release notes, docs). Others open as-is. */
+  links: Readonly<Record<string, string>>
   /** Reasoning levels per `<provider>/<model>` where narrower than the shared ladder. Mirrors the
    *  provider plugin's wire clamp, so pickers never offer a level the model rejects. */
   modelEfforts: Readonly<Record<string, ReadonlySet<string>>>
@@ -50,6 +52,10 @@ const REAGENT: DistributionPolicy = {
   bundledPlugins: new Set(['hermes-bots']),
   credentialKeys: /^REQURV_HIVE_/,
   defaultBotName: 'ReQurv',
+  links: {
+    // ReAgent ships from its fork's branch, not tagged releases: its commits are its notes.
+    'https://github.com/NousResearch/hermes-agent/releases': 'https://github.com/CesaTor/phillis_one/commits/reagent'
+  },
   modelEfforts: { 'requrv-hive/requrv-small-3.8': new Set(['low', 'medium', 'xhigh']) },
   paletteItems: new Set(['nav-new', 'nav-new-window', 'nav-settings', 'nav-starmap', 'cc-reload-window']),
   providers: new Set(['requrv-hive']),
@@ -172,6 +178,11 @@ export function distributionKeyOptions<O extends KeyOption>(upstream: O[]): O[] 
 /** Whether a model offers this reasoning level (`none` = thinking can be switched off). */
 export function modelEffortAllowed(provider: string, model: string, effort: string): boolean {
   return policy()?.modelEfforts[`${provider}/${model}`]?.has(effort) ?? true
+}
+
+/** `url`, or the page this distribution puts in its place. */
+export function distributionLink(url: string): string {
+  return policy()?.links[url] ?? url
 }
 
 export function defaultBotName(): string {

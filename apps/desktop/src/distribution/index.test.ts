@@ -13,6 +13,7 @@ import { brandText, brandTranslations } from './branding'
 
 import {
   distributionKeyOptions,
+  distributionLink,
   filterModelOptions,
   filterPaletteGroups,
   filterSettingsNav,
@@ -41,6 +42,9 @@ describe('upstream Hermes (no distribution)', () => {
     expect(appViewForPath(MESSAGING_ROUTE)).toBe('messaging')
     expect(filterModelOptions(catalog).providers).toHaveLength(3)
     expect(remoteConnectionsAllowed()).toBe(true)
+    expect(distributionLink('https://github.com/NousResearch/hermes-agent/releases')).toBe(
+      'https://github.com/NousResearch/hermes-agent/releases'
+    )
     expect(sharedMetricsAllowed()).toBe(true)
     expect(brandText('HERMES AGENT')).toBe('HERMES AGENT')
     expect(modelEffortAllowed('requrv-hive', 'requrv-small-3.8', 'high')).toBe(true)
@@ -85,6 +89,9 @@ describe('ReAgent', () => {
     reagent()
 
     expect(remoteConnectionsAllowed()).toBe(false)
+    expect(distributionLink('https://github.com/NousResearch/hermes-agent/releases')).toBe(
+      'https://github.com/CesaTor/phillis_one/commits/reagent'
+    )
     expect(sharedMetricsAllowed()).toBe(false)
   })
 

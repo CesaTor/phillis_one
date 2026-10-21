@@ -7,6 +7,10 @@ branch as a small stack of commits over upstream `main`.
 ## Build and run
 
 ```bash
+# once per sandbox: provision the Python env the backend and the update check run in.
+# Use bash: under zsh, scripts/_activation.sh aborts on a missing ../tools glob.
+HERMES_HOME=$PWD/.hermes-sandbox/hermes-home bash -c 'source ./activate'
+
 # dev, isolated from any installed Hermes (own HERMES_HOME, userData, app name)
 cd apps/desktop
 HERMES_DISTRIBUTION=reagent HERMES_DEV_SANDBOX_NAME=ReAgentDev \
