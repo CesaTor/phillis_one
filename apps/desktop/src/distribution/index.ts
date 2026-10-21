@@ -39,6 +39,8 @@ interface DistributionPolicy {
   onboardingReason: boolean
   /** Command-palette rows in the core namespaces (`CORE_PALETTE_PREFIXES`). */
   paletteItems: ReadonlySet<string>
+  /** Optional plugin surfaces (`<plugin>:<surface>`) shown; a plugin asks with `ctx.surfaceAllowed`. */
+  pluginSurfaces: ReadonlySet<string>
   /** Provider slugs (the backend provider catalog's ids). */
   providers: ReadonlySet<string>
   /** Remote gateways (connect to an existing backend, Hermes Cloud). Off = local-only. */
@@ -78,6 +80,10 @@ const REAGENT: DistributionPolicy = {
   modelEfforts: { 'requrv-hive/requrv-small-3.8': new Set(['low', 'medium', 'xhigh']) },
   onboardingReason: false,
   paletteItems: new Set(['nav-new', 'nav-new-window', 'nav-settings', 'nav-starmap', 'cc-reload-window']),
+  // Not `hermes-bots:gateway-groups` (the Bots pane's "Refresh gateway groups" list): with one
+  // local gateway its rooms are the group chats the roster already lists, and a group row
+  // reopens its room by name (resolveCanonicalGroup), never through that list.
+  pluginSurfaces: new Set(),
   providers: new Set(['requrv-hive']),
   remoteConnections: false,
   sessionsPane: false,
@@ -164,6 +170,11 @@ export function onboardingReasonAllowed(): boolean {
 
 export function sessionsPaneAllowed(): boolean {
   return policy()?.sessionsPane ?? true
+}
+
+/** Whether a plugin's optional surface shows (`ctx.surfaceAllowed`); upstream Hermes shows every one. */
+export function pluginSurfaceAllowed(pluginId: string, surface: string): boolean {
+  return policy()?.pluginSurfaces.has(`${pluginId}:${surface}`) ?? true
 }
 
 export function bundledPluginAllowed(id: string): boolean {

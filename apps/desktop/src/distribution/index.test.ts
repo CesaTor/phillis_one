@@ -8,6 +8,7 @@ import {
   SETTINGS_ROUTE,
   STARMAP_ROUTE
 } from '@/app/routes'
+import { createPluginContext } from '@/contrib/plugin'
 import type { PluginI18n, PluginLocaleBundles } from '@/i18n'
 
 import { brandPluginI18n, brandText, brandTranslations } from './branding'
@@ -88,6 +89,10 @@ describe('upstream Hermes (no distribution)', () => {
     expect(chooseProviderLaterAllowed()).toBe(true)
   })
 
+  it("shows every plugin surface, the Bots pane's gateway-groups list included", () => {
+    expect(createPluginContext('hermes-bots').surfaceAllowed?.('gateway-groups')).toBe(true)
+  })
+
   it('keeps the gateway-not-connected error as upstream wrote it', async () => {
     vi.resetModules()
 
@@ -152,6 +157,13 @@ describe('ReAgent', () => {
     reagent()
 
     expect(sessionsPaneAllowed()).toBe(false)
+  })
+
+  it("leaves the Bots pane's gateway-groups list out, and any plugin surface it never let in", () => {
+    reagent()
+
+    expect(createPluginContext('hermes-bots').surfaceAllowed?.('gateway-groups')).toBe(false)
+    expect(createPluginContext('some-plugin').surfaceAllowed?.('some-future-surface')).toBe(false)
   })
 
   it('names itself in the gateway-not-connected error plugins show raw (Bots group list)', async () => {

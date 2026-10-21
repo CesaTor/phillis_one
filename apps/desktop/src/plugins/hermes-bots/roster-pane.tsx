@@ -51,6 +51,7 @@ import { renderRosterToolbar } from './roster-pane-toolbar'
 import { botNeedsHandleLabel, rosterGatewayOptions } from './roster-sections'
 import { botWorkspaceOwnerKey, setBotsWorkspaceOwner } from './routing'
 import { activeBots, useTurnBusy } from './row-helpers'
+import { getPluginCtx } from './shared'
 import type { BotMeta, GatewaySource, GroupMember, RosterActivityFilter, RosterKindFilter, RosterRow } from './types'
 import {
   $botSections,
@@ -471,7 +472,7 @@ export function BotsPane() {
 
   return (
     <div className="flex h-full flex-col">
-      <CanonicalGroupList onOpen={openGroupChat} />
+      {getPluginCtx()?.surfaceAllowed?.('gateway-groups') !== false && <CanonicalGroupList onOpen={openGroupChat} />}
       {renderRosterToolbar({
         b,
         activityToasts,
