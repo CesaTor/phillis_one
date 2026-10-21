@@ -51,9 +51,13 @@ composer voice. `git grep -n "@/distribution"` lists them all.
 
 ## Syncing with upstream
 
+Remotes: `origin` is ReQurv's fork (github.com/CesaTor/phillis_one), `upstream` is
+NousResearch/hermes-agent with pushing disabled.
+
 ```bash
-git fetch origin
-git rebase origin/main            # on branch reagent
+git fetch upstream
+git rebase upstream/main          # on branch reagent
+git push --force-with-lease origin reagent
 cd apps/desktop && npm run typecheck && npx vitest run --project ui src/distribution
 ```
 
