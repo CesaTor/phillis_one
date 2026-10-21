@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 
 import { refChipLabel } from '@/components/assistant-ui/directive-text'
 import { useContributions } from '@/contrib/react/use-contributions'
+import { distributionAtCompletions } from '@/distribution/mentions'
 import type { HermesGateway } from '@/hermes'
 import { cachedPathCompletion, hasCachedPathCompletion } from '@/lib/slash-completion-cache'
 import { normalize } from '@/lib/text'
@@ -233,7 +234,7 @@ export function useAtCompletions(options: {
           requestCompletion<{ items?: CompletionEntry[] }>(gateway, completionOwner(sessionId), 'complete.path', params)
         )
 
-        const items = result.items ?? []
+        const items = distributionAtCompletions(result.items ?? [])
         const base = items.length > 0 ? items : starters
 
         return { items: mergeCompletionEntries(extras, base, claimedHandles), query }

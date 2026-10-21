@@ -14,7 +14,7 @@
 
 import type { ReadableAtom } from 'nanostores'
 
-import { pluginSurfaceAllowed } from '@/distribution'
+import { defaultBotHandle, pluginSurfaceAllowed } from '@/distribution'
 import { brandPluginI18n } from '@/distribution/branding'
 import { pluginRest, type PluginRestOptions, pluginSocket } from '@/hermes'
 import { createPluginI18n, type PluginI18n } from '@/i18n'
@@ -124,6 +124,8 @@ export interface PluginContext {
   /** Whether this build shows one of the plugin's optional surfaces (a distribution can leave
    *  some out); upstream Hermes shows every one. Feature-detect: `ctx.surfaceAllowed?.(...)`. */
   surfaceAllowed?: (surface: string) => boolean
+  /** The `default` profile's bot @handle in this build (upstream: `hermes`). Feature-detect. */
+  defaultBotHandle?: string
   /** Register an arbitrary cleanup to run on unload/disable — for side effects
    *  that aren't contributions or sockets (store subscriptions, timers). Runs
    *  alongside every other disposer when the plugin deactivates. */
@@ -366,6 +368,7 @@ export function createPluginContext(pluginId: string, onDispose?: (dispose: () =
     registerMany: cs => track(registry.registerMany(cs.map(scope))),
     registerSettingsPage: page => track(registry.register(scope(settingsPageContribution(page)))),
     surfaceAllowed: surface => pluginSurfaceAllowed(pluginId, surface),
+    defaultBotHandle: defaultBotHandle(),
     onDispose: fn => void track(fn),
     onEvent: (type, listener) => track(onGatewayEvent(type, listener)),
     ...createPluginLifetime(track),

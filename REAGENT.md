@@ -113,3 +113,8 @@ statusbar item appeared.
   (Hive). Messaging and kanban tools are already off for the agent; cron stays on.
 - Backend-generated copy is not rebranded; onboarding hides the backend's launch notice,
   but other backend messages can still say Hermes.
+- The default bot's handle is `@requrv` in the app (`defaultBotHandle`), but the backend still
+  calls it `@hermes` (agents' teammate roster and DM stamps, `message_agent` help, `@` path
+  completions). The app keeps `@hermes` as a silent alias that routes to the default bot,
+  folds the backend's `@default`/`@hermes` completion rows into `@requrv`, and hands
+  `message_agent` the `hermes` target every backend resolver accepts.

@@ -25,6 +25,9 @@ interface DistributionPolicy {
   chooseProviderLater: boolean
   /** Env-var credentials searchable from settings search (provider keys included). */
   credentialKeys: RegExp
+  /** The `default` profile's @handle (shown, completed, routed). The backend's `hermes` alias keeps
+   *  routing to it: agents stamp it, and older rooms carry it. */
+  defaultBotHandle: string
   /** The `default` profile's bot name until the user gives it a title. */
   defaultBotName: string
   /** Full logo shown where upstream letters its wordmark (empty chat), per rendered theme. */
@@ -71,6 +74,7 @@ const REAGENT: DistributionPolicy = {
   // Without a Hive key the bot chat cannot open (the backend rejects a session with no model).
   chooseProviderLater: false,
   credentialKeys: /^REQURV_HIVE_/,
+  defaultBotHandle: 'requrv',
   defaultBotName: 'ReQurv',
   logo: { dark: 'reagent/logo-dark.webp', light: 'reagent/logo-light.webp' },
   links: {
@@ -241,6 +245,11 @@ export function distributionLogo(mode: 'dark' | 'light'): null | string {
 /** `url`, or the page this distribution puts in its place. */
 export function distributionLink(url: string): string {
   return policy()?.links[url] ?? url
+}
+
+/** The `default` profile's @handle; plugins read it as `ctx.defaultBotHandle`. */
+export function defaultBotHandle(): string {
+  return policy()?.defaultBotHandle ?? 'hermes'
 }
 
 export function defaultBotName(): string {

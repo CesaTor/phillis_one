@@ -10,6 +10,7 @@ import { atom, host, queryClient, useQuery, useValue } from '@hermes/plugin-sdk'
 
 import { botsText } from './i18n'
 import { displayName } from './labels'
+import { isPrimaryHandleRow, primaryBotHandle, primaryHandleAliases } from './primary-handle'
 import {
   aliasIdentityFor,
   beginAliasRouteIndex,
@@ -1165,14 +1166,15 @@ export function mergeMultiSourceRoster(
 /** The @handle users tag a bot with. Multi-source rosters precompute the
  *  handle (bare name, or name-device when the profile exists on several
  *  registered sources) — prefer it when present. The primary profile's
- *  callable alias is 'hermes' — the mention middleware resolves it back to
- *  'default' — so the word 'default' never surfaces in the UI. */
+ *  callable alias is 'hermes' (or the host's own, see primary-handle.ts) — the
+ *  mention middleware resolves it back to 'default' — so the word 'default'
+ *  never surfaces in the UI. */
 export function botHandle(name: string, bot?: Partial<RosterRow> | null): string {
-  if (bot?.handle && bot.handle !== name) {
+  if (bot?.handle && bot.handle !== name && !isPrimaryHandleRow(name, bot)) {
     return bot.handle
   }
 
-  return (name || '').trim().toLowerCase() === 'default' ? 'hermes' : name
+  return (name || '').trim().toLowerCase() === 'default' ? primaryBotHandle() : name
 }
 
 /** Taggable @-forms derived from a bot's friendly names — the core profile
@@ -1194,7 +1196,9 @@ export function mentionNameForms(value: null | string | undefined): string[] {
   const collapsed = name.replace(/[^a-z0-9_-]+/g, '')
 
   return [...new Set([slug, collapsed])].filter(
-    form => /^[a-z0-9][a-z0-9_-]*$/.test(form) && !['all', 'everyone', 'user', 'default', 'hermes'].includes(form)
+    form =>
+      /^[a-z0-9][a-z0-9_-]*$/.test(form) &&
+      !['all', 'everyone', 'user', 'default', 'hermes', primaryBotHandle()].includes(form)
   )
 }
 
@@ -1349,7 +1353,7 @@ export function resolveRosterMentions(
 
     const handle = String(botHandle(bot.name, bot) || '').toLowerCase()
     const name = String(bot.name || '').toLowerCase()
-    const forms = new Set([handle, name])
+    const forms = new Set([handle, name, ...primaryHandleAliases(bot.name, bot)])
 
     if (bot.handle) {
       forms.add(String(bot.handle).toLowerCase())

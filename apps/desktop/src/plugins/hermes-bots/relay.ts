@@ -9,7 +9,8 @@
 
 import { host, LruCache } from '@hermes/plugin-sdk'
 
-import { botHandle, clearBotAttention, noteBotAttention } from './data'
+import { clearBotAttention, noteBotAttention } from './data'
+import { backendBotHandle } from './primary-handle'
 import { RELAY_DELIVER_TIMEOUT_MS } from './relay-budget'
 import { ID } from './shared'
 import type { ProfileRoute, RosterRow } from './types'
@@ -339,7 +340,7 @@ async function relayAgentsOn(
     const rows = profiles
       .map(profile => ({
         profile: String(profile?.name || ''),
-        handle: botHandle(profile?.name, profile),
+        handle: backendBotHandle(profile?.name, profile),
         connection_id: connection.id,
         connection_label: label,
         title: String(profile?.ui_meta?.['hermes-bots']?.title || profile?.display_name || ''),

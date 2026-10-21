@@ -31,6 +31,7 @@ import { type GroupRoundMemberContext, runGroupContinuationMembers, runGroupRoun
 import { rejectGroupSlashCommand } from './group-slash'
 import { GROUP_TURN_HARD_CAP_MS, harvestStrandedGroupReply } from './group-turns'
 import { botsText } from './i18n'
+import { primaryHandleAliases } from './primary-handle'
 import { requestForBot } from './routing'
 import type { Attachment, GroupMember, GroupMessage } from './types'
 
@@ -63,6 +64,7 @@ export function parseGroupChatMentions(text: unknown, members: GroupMember[]) {
     const handle = String(botHandle(member.name, member) || '').trim()
 
     const forms = new Set([
+      ...primaryHandleAliases(member.name, member),
       member.name.toLowerCase(),
       member.name.toLowerCase().replace(/[\s_-]+/g, ''),
       ...(handle ? [handle.toLowerCase(), handle.toLowerCase().replace(/[\s_-]+/g, '')] : []),
