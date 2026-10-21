@@ -75,7 +75,13 @@ statusbar item appeared.
   installer fetches upstream Hermes; ReAgent needs its own home and a bundled payload
   built from this branch.
 - No release feed: auto-update is off until ReQurv hosts one.
-- Backend defaults (`config.yaml`) still route auxiliary tasks to Nous Portal and
-  enable messaging/cron/kanban toolsets; ReAgent should ship its own defaults.
+- Backend prompt copy still names Hermes: every session carries upstream's help guidance
+  ("You run on Hermes Agent (by Nous Research)", agent/prompt_builder.py), and bot profiles
+  created later start from upstream's default SOUL. Only the default bot's SOUL is seeded.
+- `seed-soul.ts` recognises an untouched persona by upstream's exact default text
+  (hermes_cli/default_soul.py). If an upstream sync rewords it, copy the new text into
+  `UPSTREAM_DEFAULT_SOUL` or the seed silently stops renaming the default bot.
+- Auxiliary tasks need no seed: `auxiliary.*.provider: auto` already uses the main model
+  (Hive). Messaging and kanban tools are already off for the agent; cron stays on.
 - Backend-generated copy (e.g. the "not connected to any AI provider" notice) is not
   rebranded.

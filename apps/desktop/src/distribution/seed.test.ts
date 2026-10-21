@@ -5,8 +5,10 @@ import type { ProfileInfo } from '@/types/hermes'
 
 const renameProfile = vi.fn(async () => ({ name: 'default', ok: true, path: '/home' }))
 const refreshProfiles = vi.fn(async () => [])
+const getProfileSoul = vi.fn(async () => ({ content: '', exists: false }))
+const updateProfileSoul = vi.fn(async () => ({ ok: true }))
 
-vi.mock('@/hermes', () => ({ renameProfile }))
+vi.mock('@/hermes', () => ({ getProfileSoul, renameProfile, updateProfileSoul }))
 
 const profile = (overrides: Partial<ProfileInfo>): ProfileInfo =>
   ({

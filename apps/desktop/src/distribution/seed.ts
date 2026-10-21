@@ -1,6 +1,8 @@
 import { renameProfile } from '@/hermes'
 import { $profiles, refreshProfiles } from '@/store/profile'
 
+import { seedDefaultSoul } from './seed-soul'
+
 import { defaultBotName, distribution } from '.'
 
 // The distribution's name for the `default` profile's bot, written as that
@@ -32,4 +34,5 @@ function seedDefaultBotName(): void {
 
 if (distribution() !== 'hermes') {
   seedDefaultBotName()
+  seedDefaultSoul()
 }
