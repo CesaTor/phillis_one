@@ -106,6 +106,16 @@ statusbar item appeared.
   `~/.hermes/desktop-ssh`) and the remote `~/.hermes` probes. ReAgent has remote
   connections off. UI copy that prints `~/.hermes` paths is not rebranded either.
 - No release feed: auto-update is off until ReQurv hosts one.
+- **Third-party licenses (decide before shipping a packaged build).** The audit in
+  `scripts/licenses/AUDIT.md` (regenerate with `node scripts/licenses/collect.mjs --pypi`)
+  feeds the in-app Licenses screen. Open items: the bundled payload installs every
+  non-opt-in extra, so `pilk` (`silk` extra, GPL-3.0) and `piper-tts` (`piper` extra,
+  GPL-3.0-or-later) ship; both are voice features hidden in ReAgent, so ReAgent's payload
+  should exclude those extras. `pillow-heif` (core) bundles GPLv2 x265 in its binary
+  wheels despite declaring BSD-3. 12 Python packages still resolve to UNKNOWN. `gsap` has a
+  non-OSI "no charge" license (a dependency of the web dashboard / `@nous-research/ui`).
+  LGPL-3.0 (`python-telegram-bot`, `edge-tts`) and MPL-2.0 (noVNC, certifi, ...) need their
+  notices kept and the libraries replaceable. Have legal review these.
 - Backend prompt copy still names Hermes: every session carries upstream's help guidance
   ("You run on Hermes Agent (by Nous Research)", agent/prompt_builder.py), and bot profiles
   created later start from upstream's default SOUL. Only the default bot's SOUL is seeded.

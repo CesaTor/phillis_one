@@ -3,6 +3,7 @@ import { type ReactElement, useEffect } from 'react'
 
 import { UpdateStatusCard, VersionHero } from '@/components/update-status'
 import { VersionDetails } from '@/components/version-details'
+import { LicensesEntry } from '@/distribution/licenses'
 import { useI18n } from '@/i18n'
 import { RefreshCw } from '@/lib/icons'
 import { $connection } from '@/store/session'
@@ -63,6 +64,7 @@ function AppUpdatesSettings({ includeUninstall }: AppUpdatesSettingsProps): Reac
           {remote && <UpdateStatusCard showReleaseNotes={false} target="backend" />}
         </div>
         {version && <VersionDetails version={version} />}
+        <LicensesEntry />
         {includeUninstall && <UninstallSection />}
       </div>
     </SettingsContent>

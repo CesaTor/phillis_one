@@ -36,6 +36,8 @@ interface DistributionPolicy {
   logo: null | string
   /** Upstream URLs this distribution answers itself (release notes, docs). Others open as-is. */
   links: Readonly<Record<string, string>>
+  /** About ▸ Licenses: the notices the bundled licenses require to travel with the app. */
+  licensesScreen: boolean
   /** Reasoning levels per `<provider>/<model>` where narrower than the shared ladder. Mirrors the
    *  provider plugin's wire clamp, so pickers never offer a level the model rejects. */
   modelEfforts: Readonly<Record<string, ReadonlySet<string>>>
@@ -89,6 +91,7 @@ const REAGENT: DistributionPolicy = {
     // ReAgent ships from its fork's branch, not tagged releases: its commits are its notes.
     'https://github.com/NousResearch/hermes-agent/releases': 'https://github.com/CesaTor/phillis_one/commits/reagent'
   },
+  licensesScreen: true,
   modelEfforts: { 'requrv-hive/requrv-small-3.8': new Set(['low', 'medium', 'xhigh']) },
   onboardingReason: false,
   paletteItems: new Set(['nav-new', 'nav-new-window', 'nav-settings', 'nav-starmap', 'cc-reload-window']),
@@ -298,6 +301,11 @@ export function distributionLogo(): null | string {
 /** `url`, or the page this distribution puts in its place. */
 export function distributionLink(url: string): string {
   return policy()?.links[url] ?? url
+}
+
+/** Whether About lists the legal notices (`src/distribution/licenses.tsx`); upstream Hermes has none. */
+export function licensesScreenAllowed(): boolean {
+  return policy()?.licensesScreen ?? false
 }
 
 /** The `default` profile's @handle; plugins read it as `ctx.defaultBotHandle`. */

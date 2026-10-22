@@ -23,6 +23,9 @@ path = [
   "apps/desktop/src/plugins/hermes-bots/cron-pane.primary-handle.test.tsx",
   "apps/desktop/src/plugins/hermes-bots/canonical-group-list-boot.test.tsx",
   "plugins/model-providers/requrv-hive/**",
+  "scripts/licenses/collect.mjs",
+  "scripts/licenses/AUDIT.md",
+  "scripts/licenses/pypi-cache.json",
   "tests/providers/test_requrv_hive_profile.py",
 ]
 precedence = "override"
@@ -32,6 +35,29 @@ SPDX-License-Identifier = "LicenseRef-ReQurv-Proprietary"
 # Third-party files inside ReQurv's directories keep their own license.
 [[annotations]]
 path = ["apps/desktop/public/reagent/fonts/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "The Syne Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+# Copies of third-party license texts shown in the app's Licenses screen keep the
+# license of what they reproduce.
+[[annotations]]
+path = ["apps/desktop/src/distribution/licenses/nous-research-mit.txt"]
+precedence = "override"
+SPDX-FileCopyrightText = "2025 Nous Research"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [
+  "apps/desktop/src/distribution/licenses/security-guidance-apache-2.0.txt",
+  "apps/desktop/src/distribution/licenses/security-guidance-NOTICE.txt",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Anthropic, PBC"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["apps/desktop/src/distribution/licenses/syne-ofl-1.1.txt"]
 precedence = "override"
 SPDX-FileCopyrightText = "The Syne Project Authors"
 SPDX-License-Identifier = "OFL-1.1"

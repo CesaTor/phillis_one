@@ -1,0 +1,989 @@
+{
+  "aiofiles==24.1.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "aiohttp-retry==2.9.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "aiohttp-socks==0.11.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "aiosqlite==0.22.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "alibabacloud-credentials-api==1.0.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-credentials==1.0.12": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-dingtalk==2.2.42": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-endpoint-util==0.0.4": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-gateway-dingtalk==1.0.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-gateway-spi==0.0.4": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-openapi-util==0.2.4": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-tea-openapi==0.4.6": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-tea-util==0.3.15": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "alibabacloud-tea==0.4.3": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "asyncpg==0.31.0": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "audioop-lts==0.2.2": {
+    "status": "ok",
+    "license_expression": "PSF-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "azure-core==1.41.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": []
+  },
+  "azure-identity==1.25.3": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": []
+  },
+  "base58==2.1.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "brotlicffi==1.2.0.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": []
+  },
+  "browser-harness==0.1.13": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "cbor2==6.1.4": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "cdp-use==1.4.5": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "concurrent-log-handler==0.9.29": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "cryptography==50.0.1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0 OR BSD-3-Clause",
+    "license": null,
+    "classifiers": []
+  },
+  "ctranslate2==4.8.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": []
+  },
+  "darabonba-core==1.0.8": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache License 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "davey==0.1.6": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "daytona-api-client-async==0.155.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "daytona-api-client==0.155.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "daytona-toolbox-api-client-async==0.155.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "daytona-toolbox-api-client==0.155.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "daytona==0.155.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": []
+  },
+  "ddgs==9.16.0": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "dependency-injector==4.49.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: BSD License"
+    ]
+  },
+  "deprecated==1.3.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "dingtalk-stream==0.24.3": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "discord-py==2.7.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "elevenlabs==1.59.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "environs==14.6.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "eval-type-backport==0.4.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "exa-py==2.10.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "fal-client==0.13.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": []
+  },
+  "fetch-use==0.4.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "filelock==3.32.4": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "firecrawl-py==4.17.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT License",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "google-api-core==2.34.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "google-cloud-pubsub==2.39.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "greenlet==3.5.5": {
+    "status": "ok",
+    "license_expression": "MIT AND PSF-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "grpc-google-iam-v1==0.14.5": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "grpcio-status==1.83.0": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "grpcio==1.83.0": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "grpclib==0.4.9": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "BSD-3-Clause",
+    "classifiers": [
+      "License :: OSI Approved :: BSD License"
+    ]
+  },
+  "h2==4.4.1": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "hpack==4.2.0": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "httpx2-jsfetch==1.0": {
+    "status": "ok",
+    "license_expression": "BSD-3-Clause",
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: BSD License"
+    ]
+  },
+  "hyperframe==6.1.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "jsonpath-python==1.1.6": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "lark-oapi==1.6.8": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "lxml==6.1.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "BSD-3-Clause",
+    "classifiers": []
+  },
+  "marshmallow==4.3.1": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "mautrix==0.21.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)"
+    ]
+  },
+  "microsoft-teams-api==2.0.16": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "microsoft-teams-apps==2.0.13.4": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": []
+  },
+  "microsoft-teams-cards==2.0.16": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "microsoft-teams-common==2.0.16": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "mistralai==2.4.8": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": []
+  },
+  "modal==1.5.5": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "msal-extensions==1.3.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT License",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "msal==1.38.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "msgpack==1.2.1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "nemo-relay==0.10.0": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "nest-asyncio==1.6.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "BSD",
+    "classifiers": [
+      "License :: OSI Approved :: BSD License"
+    ]
+  },
+  "obstore==0.8.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "onnxruntime==1.29.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT License",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "opentelemetry-exporter-otlp-proto-common==1.39.1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "opentelemetry-exporter-otlp-proto-http==1.39.1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "opentelemetry-instrumentation-aiohttp-client==0.60b1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "opentelemetry-instrumentation==0.60b1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "opentelemetry-proto==1.39.1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "opentelemetry-sdk==1.39.1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "opentelemetry-semantic-conventions==0.60b1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "opentelemetry-util-http==0.60b1": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "parallel-web==0.4.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "pathvalidate==3.3.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT License",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "pilk==0.2.4": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+    ]
+  },
+  "pillow-heif==1.6.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "BSD-3-Clause",
+    "classifiers": []
+  },
+  "piper-tts==1.8.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "GPL-3.0-or-later",
+    "classifiers": []
+  },
+  "playwright==1.62.0": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "portalocker==3.2.0": {
+    "status": "ok",
+    "license_expression": "BSD-3-Clause",
+    "license": null,
+    "classifiers": []
+  },
+  "primp==2.0.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT License",
+    "classifiers": []
+  },
+  "propcache==0.5.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "proto-plus==1.28.3": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "protobuf==6.33.6": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "3-Clause BSD License",
+    "classifiers": []
+  },
+  "pycryptodome==3.23.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "BSD, Public Domain",
+    "classifiers": [
+      "License :: OSI Approved :: BSD License",
+      "License :: Public Domain"
+    ]
+  },
+  "pynacl==1.6.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "pyopen-wakeword==1.1.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "pypinyin==0.55.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "pypng==0.20220715.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "python-olm==3.2.16": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "python-socks==2.8.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "pytz==2026.3.post1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "pywin32==311": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "PSF",
+    "classifiers": [
+      "License :: OSI Approved :: Python Software Foundation License"
+    ]
+  },
+  "pywinpty==3.0.5": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "qrcode==7.4.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "BSD",
+    "classifiers": [
+      "License :: OSI Approved :: BSD License"
+    ]
+  },
+  "requests-toolbelt==1.0.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache 2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "resvg-py==0.4.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": []
+  },
+  "ruamel-yaml==0.18.16": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "setuptools==83.0.0": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "sherpa-onnx-core==1.13.8": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": []
+  },
+  "sherpa-onnx==1.13.8": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache licensed, as found in the LICENSE file",
+    "classifiers": []
+  },
+  "slack-bolt==1.30.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "slack-sdk==3.44.1": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "synchronicity==0.12.5": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "toml==0.10.2": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MIT",
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "tomli-w==1.2.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": null,
+    "classifiers": [
+      "License :: OSI Approved :: MIT License"
+    ]
+  },
+  "tornado==6.5.10": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "tqdm==4.70.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "MPL-2.0 AND MIT",
+    "classifiers": []
+  },
+  "types-certifi==2021.10.8.3": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0 license",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "types-toml==0.10.8.20260518": {
+    "status": "ok",
+    "license_expression": "Apache-2.0",
+    "license": null,
+    "classifiers": []
+  },
+  "tzdata==2025.3": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": []
+  },
+  "unpaddedbase64==2.1.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "urllib3==2.8.0": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "vercel-cache==0.7.2": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "vercel-headers==0.7.1": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "vercel-internal-telemetry==0.7.2": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "vercel-oidc==0.8.0": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "vercel-workers==0.0.25": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "vercel==0.7.2": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "websocket-client==1.9.0": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  "winrt-runtime==3.2.1": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "winrt-windows-applicationmodel==3.2.1": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "winrt-windows-foundation-collections==3.2.1": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "winrt-windows-foundation==3.2.1": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "winrt-windows-services-store==3.2.1": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  },
+  "wrapt==1.17.3": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "BSD",
+    "classifiers": [
+      "License :: OSI Approved :: BSD License"
+    ]
+  },
+  "yarl==1.24.5": {
+    "status": "ok",
+    "license_expression": null,
+    "license": "Apache-2.0",
+    "classifiers": []
+  },
+  "zipp==4.1.0": {
+    "status": "ok",
+    "license_expression": "MIT",
+    "license": null,
+    "classifiers": []
+  }
+}
