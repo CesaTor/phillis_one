@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   $titlebarAppActionsSide,
@@ -19,6 +19,18 @@ describe('titlebarAppActionsClusterCounts', () => {
     // Sidebar toggle + what Simple keeps of the app actions; nothing fixed on the right.
     expect(titlebarAppActionsClusterCounts('right', 0, 0, 'simple')).toEqual({ left: 1, right: 2 })
     expect(titlebarAppActionsClusterCounts('left', 0, 0, 'simple')).toEqual({ left: 3, right: 0 })
+  })
+
+  it('reserves no space for the titlebar tools a distribution hides (ReAgent: layout, HUD)', () => {
+    vi.stubEnv('HERMES_DISTRIBUTION', 'reagent')
+
+    try {
+      // Settings + flip + right sidebar on the right; settings follows the side.
+      expect(titlebarAppActionsClusterCounts('right', 0, 0, 'advanced')).toEqual({ left: 1, right: 3 })
+      expect(titlebarAppActionsClusterCounts('left', 0, 0, 'advanced')).toEqual({ left: 2, right: 2 })
+    } finally {
+      vi.unstubAllEnvs()
+    }
   })
 })
 

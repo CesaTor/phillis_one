@@ -24,12 +24,14 @@ import {
   filterPaletteGroups,
   filterSettingsNav,
   filterSettingsSearch,
+  keybindActionAllowed,
   modelEffortAllowed,
   onboardingReasonAllowed,
   providerAllowed,
   remoteConnectionsAllowed,
   sessionsPaneAllowed,
-  sharedMetricsAllowed
+  sharedMetricsAllowed,
+  titlebarToolAllowed
 } from '.'
 
 const catalog = {
@@ -87,6 +89,21 @@ describe('upstream Hermes (no distribution)', () => {
     expect(addProviderAllowed()).toBe(true)
     expect(onboardingReasonAllowed()).toBe(true)
     expect(chooseProviderLaterAllowed()).toBe(true)
+  })
+
+  it('keeps every titlebar tool with its keybinds, ⌘K rows and the HUD gesture page', () => {
+    const toolIds = ['settings', 'layout', 'hud', 'flip-panes', 'right-sidebar', 'some-future-tool']
+
+    expect(toolIds.every(id => titlebarToolAllowed({ id }))).toBe(true)
+    expect(['view.toggleHud', 'hud.snapToPointer', 'layout.editMode'].every(id => keybindActionAllowed({ id }))).toBe(
+      true
+    )
+    expect(filterPaletteGroups([{ items: [{ action: 'layout.editMode', id: 'core:layout.editMode' }] }])).toHaveLength(
+      1
+    )
+    expect(
+      filterSettingsNav([{ id: 'keybinds', children: [{ id: 'keybinds:hud-gesture' }] }])[0].children
+    ).toHaveLength(1)
   })
 
   it("shows every plugin surface, the Bots pane's gateway-groups list included", () => {
@@ -234,6 +251,58 @@ describe('ReAgent', () => {
     ])
 
     expect(groups).toEqual([{ items: [{ id: 'nav-settings' }, { id: 'hermes-bots:new-bot' }] }])
+  })
+
+  it('shows settings, swap and the right sidebar in the titlebar, and no layout editor or HUD', () => {
+    reagent()
+
+    const shown = ['settings', 'layout', 'hud', 'flip-panes', 'right-sidebar', 'some-future-tool'].filter(id =>
+      titlebarToolAllowed({ id })
+    )
+
+    expect(shown).toEqual(['settings', 'flip-panes', 'right-sidebar'])
+  })
+
+  it('takes the layout editor and HUD out of keybinds, ⌘K and settings too', () => {
+    reagent()
+
+    for (const id of ['view.toggleHud', 'hud.snapToPointer', 'layout.editMode']) {
+      expect(keybindActionAllowed({ id })).toBe(false)
+    }
+
+    for (const id of ['view.flipPanes', 'view.toggleRightSidebar', 'nav.settings', 'hermes-bots.newBot']) {
+      expect(keybindActionAllowed({ id })).toBe(true)
+    }
+
+    const palette = filterPaletteGroups([
+      {
+        items: [
+          { action: 'layout.editMode', id: 'core:layout.editMode' },
+          { action: 'view.toggleStatusbar', id: 'core:view.toggleStatusbar' },
+          { id: 'core:layout.reset' }
+        ]
+      }
+    ])
+
+    expect(palette).toEqual([
+      { items: [{ action: 'view.toggleStatusbar', id: 'core:view.toggleStatusbar' }, { id: 'core:layout.reset' }] }
+    ])
+
+    const keybinds = filterSettingsNav([
+      {
+        id: 'keybinds',
+        children: [{ id: 'keybinds:shortcuts' }, { id: 'keybinds:hud-gesture' }, { id: 'keybinds:screen-capture' }]
+      }
+    ])
+
+    expect(keybinds[0].children?.map(child => child.id)).toEqual(['keybinds:shortcuts', 'keybinds:screen-capture'])
+
+    const hits = filterSettingsSearch([
+      { target: { view: 'keybinds', subpage: 'hud-gesture', setting: 'keybinds.hudModifier' } },
+      { target: { view: 'keybinds', subpage: 'screen-capture', setting: 'keybinds.screenshot' } }
+    ])
+
+    expect(hits.map(hit => hit.target.subpage)).toEqual(['screen-capture'])
   })
 
   it('renames the product in copy but leaves CLI commands, paths and env names alone', () => {

@@ -18,7 +18,7 @@ import { SECTIONS } from './constants'
 import { OTHER_SUBPAGES } from './other-subpages'
 import { settingSearchTargets } from './settings-manifest'
 import { buildConfigSearchEntries, buildCredentialSearchEntries, type SettingsSearchEntry } from './settings-search'
-import { settingsSubpages } from './subpages'
+import { settingsSubpageForTarget, settingsSubpages } from './subpages'
 import type { SettingsView } from './types'
 
 /** An installed plugin row, deep-linkable as `/capabilities?tab=plugins&plugin=<id>`. */
@@ -154,7 +154,7 @@ export function useSettingsSearchCatalog(enabled: boolean) {
       context: parent?.label ?? view,
       icon: parent?.icon ?? Settings2,
       id: `setting:${id}`,
-      target: { setting: id, view }
+      target: { setting: id, subpage: settingsSubpageForTarget(view, undefined, id), view }
     }
   })
 

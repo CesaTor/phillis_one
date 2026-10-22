@@ -7,6 +7,7 @@
 
 import { registry } from '@/contrib/registry'
 import type { Contribution } from '@/contrib/types'
+import { filterKeybindActions, keybindActionAllowed } from '@/distribution'
 import { isMacPlatform } from '@/lib/platform'
 
 export type KeybindCategory = 'composer' | 'profiles' | 'session' | 'navigation' | 'view'
@@ -302,7 +303,7 @@ export function allKeybindActions(contributions?: readonly Contribution[]): Keyb
       defaults: k.defaults ?? [],
       label: k.label
     }))
-  ]
+  ].filter(keybindActionAllowed)
 }
 
 export function keybindAction(id: string): KeybindActionMeta | undefined {
@@ -345,7 +346,7 @@ export interface KeybindReadonly {
   keys: readonly string[]
 }
 
-export const KEYBIND_READONLY: readonly KeybindReadonly[] = [
+export const KEYBIND_READONLY: readonly KeybindReadonly[] = filterKeybindActions([
   { id: 'composer.send', category: 'composer', keys: ['enter'] },
   { id: 'composer.newline', category: 'composer', keys: ['shift+enter'] },
   { id: 'composer.steer', category: 'composer', keys: ['enter'] },
@@ -375,4 +376,4 @@ export const KEYBIND_READONLY: readonly KeybindReadonly[] = [
   { id: 'view.terminalPaste', category: 'view', keys: isMacPlatform() ? ['mod+v'] : ['mod+shift+v'] },
   // Global OS chord registered in main while HUD mode is up.
   { id: 'hud.snapToPointer', category: 'view', keys: ['mod+shift+g'] }
-]
+])

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
 import { Slot } from '@/contrib/react/slot'
 import { useContributions } from '@/contrib/react/use-contributions'
+import { filterTitlebarTools } from '@/distribution'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { formatModifierToken } from '@/lib/keybinds/combo'
@@ -210,7 +211,7 @@ export function TitlebarControls({ leftTools = [], tools = [], onOpenSettings }:
 
   // Static system tools — always pinned to the screen's right edge so the
   // left titlebar stays free for tabs (#107351).
-  const systemTools: TitlebarTool[] = [
+  const systemTools: TitlebarTool[] = filterTitlebarTools([
     {
       ...TITLEBAR_FIXED_TOOLS.settings,
       actionId: 'nav.settings',
@@ -258,7 +259,7 @@ export function TitlebarControls({ leftTools = [], tools = [], onOpenSettings }:
         toggleHud(hudTargetSessionId())
       }
     }
-  ]
+  ])
 
   const view = appViewForPath(location.pathname)
 
@@ -313,7 +314,7 @@ export function TitlebarControls({ leftTools = [], tools = [], onOpenSettings }:
 
   const visibleSystemTools = appActionsSide === 'right' ? systemTools.filter(visibleTool) : []
   const visiblePaneTools = tools.filter(visibleTool)
-  const visibleRightFixedTools = [flipTool, rightSidebarTool].filter(visibleTool)
+  const visibleRightFixedTools = filterTitlebarTools([flipTool, rightSidebarTool]).filter(visibleTool)
 
   return (
     <>

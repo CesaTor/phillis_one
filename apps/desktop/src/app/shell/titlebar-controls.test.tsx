@@ -205,4 +205,25 @@ describe('titlebar app-action cluster', () => {
     expect(within(left).getByLabelText('HUD mode')).toBeTruthy()
     expect(within(right).queryByLabelText('Open settings')).toBeNull()
   })
+
+  it('ReAgent shows settings, swap and the right sidebar, but no layout editor or HUD, on either side', () => {
+    vi.stubEnv('HERMES_DISTRIBUTION', 'reagent')
+
+    try {
+      for (const side of ['right', 'left'] as const) {
+        setTitlebarAppActionsSide(side)
+        renderControls('/')
+
+        for (const label of ['Open settings', 'Swap sidebar sides', /(Show|Hide) right sidebar/]) {
+          expect(screen.getByLabelText(label)).toBeTruthy()
+        }
+
+        expect(screen.queryByLabelText('Layout editor')).toBeNull()
+        expect(screen.queryByLabelText('HUD mode')).toBeNull()
+        cleanup()
+      }
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
 })

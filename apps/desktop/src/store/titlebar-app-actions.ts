@@ -1,3 +1,4 @@
+import { titlebarToolAllowed } from '@/distribution'
 import { type Codec, persistentAtom } from '@/lib/persisted'
 import { DEFAULT_INTERFACE_MODE, type InterfaceMode, shownInMode, type Tiered } from '@/store/interface-mode'
 
@@ -53,8 +54,8 @@ export function titlebarAppActionsClusterCounts(
 ): { left: number; right: number } {
   const shown = shownInMode(mode)
   const sidebar = 1
-  const appActions = APP_ACTION_IDS.filter(id => shown(TITLEBAR_FIXED_TOOLS[id])).length
-  const rightFixed = RIGHT_FIXED_IDS.filter(id => shown(TITLEBAR_FIXED_TOOLS[id])).length
+  const appActions = APP_ACTION_IDS.filter(id => shown(TITLEBAR_FIXED_TOOLS[id]) && titlebarToolAllowed({ id })).length
+  const rightFixed = RIGHT_FIXED_IDS.filter(id => shown(TITLEBAR_FIXED_TOOLS[id]) && titlebarToolAllowed({ id })).length
 
   if (side === 'left') {
     return { left: sidebar + appActions + leftExtras, right: rightFixed + rightExtras }

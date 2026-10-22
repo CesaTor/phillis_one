@@ -61,6 +61,9 @@ interface DistributionPolicy {
   statusbarItems: ReadonlySet<string>
   /** Built-in sidebar nav rows (`SIDEBAR_NAV` ids). */
   sidebarNav: ReadonlySet<string>
+  /** Fixed titlebar tools (`TITLEBAR_FIXED_TOOLS` ids) bar the left-sidebar toggle; pane and plugin
+   *  tools pass. A hidden tool takes the keybinds and ⌘K rows that drive it along. */
+  titlebarTools: ReadonlySet<string>
   /** App views reachable by route; anything else lands on a new chat. */
   views: ReadonlySet<AppView>
   /** Composer voice: dictation, voice conversation, read-aloud. */
@@ -104,11 +107,16 @@ const REAGENT: DistributionPolicy = {
   settingsChildren: {
     // Fallbacks, auxiliary, delegation and MoA each pick another provider.
     'config:model': new Set(['config:model:main']),
+    // Not the HUD gesture (a modifier tap summons the HUD window): ReAgent has no HUD.
+    keybinds: new Set(['keybinds:shortcuts', 'keybinds:screen-capture']),
     providers: new Set(['pview:keys'])
   },
   sharedMetrics: false,
   sidebarNav: new Set(['new-session']),
   statusbarItems: new Set(['context-usage', 'running-timer', 'session-timer', 'version-client']),
+  // Not `layout` (the layout editor) or `hud` (the floating HUD window): ReAgent keeps its preset
+  // layout and lives in its own window.
+  titlebarTools: new Set(['settings', 'flip-panes', 'right-sidebar']),
   views: new Set<AppView>(['chat', 'extension', 'settings', 'starmap']),
   voice: false
 }
@@ -128,6 +136,13 @@ const CORE_PALETTE_PREFIXES = [
   'set-'
 ]
 
+// Keybind actions whose only job is a fixed titlebar tool's. They follow `titlebarTools`, so a
+// hidden tool has no chord, keybinds-panel row or ⌘K row left to reach it by.
+const TITLEBAR_TOOL_ACTIONS: Readonly<Record<string, readonly string[]>> = {
+  hud: ['view.toggleHud', 'hud.snapToPointer'],
+  layout: ['layout.editMode']
+}
+
 export function distribution(): DistributionId {
   return import.meta.env.HERMES_DISTRIBUTION === 'reagent' ? 'reagent' : 'hermes'
 }
@@ -146,6 +161,32 @@ export function sidebarNavAllowed(item: { id: string }): boolean {
 
 export function statusbarItemAllowed(item: { id: string }): boolean {
   return policy()?.statusbarItems.has(item.id) ?? true
+}
+
+export function titlebarToolAllowed(tool: { id: string }): boolean {
+  return policy()?.titlebarTools.has(tool.id) ?? true
+}
+
+/** `tools` minus the fixed titlebar tools this distribution hides. Generic, so a wrapped literal
+ *  keeps its contextual type. */
+export function filterTitlebarTools<T extends { id: string }>(tools: readonly T[]): T[] {
+  return tools.filter(titlebarToolAllowed)
+}
+
+/** A keybind action (its chord, keybinds-panel row, ⌘K row): gone with the titlebar tool it drives. */
+export function keybindActionAllowed(action: { id: string }): boolean {
+  const p = policy()
+
+  return (
+    !p ||
+    Object.entries(TITLEBAR_TOOL_ACTIONS).every(
+      ([tool, actions]) => p.titlebarTools.has(tool) || !actions.includes(action.id)
+    )
+  )
+}
+
+export function filterKeybindActions<A extends { id: string }>(actions: readonly A[]): A[] {
+  return actions.filter(keybindActionAllowed)
 }
 
 export function remoteConnectionsAllowed(): boolean {
@@ -323,7 +364,9 @@ interface PaletteGroupLike<I extends { id: string }> {
   items: I[]
 }
 
-export function filterPaletteGroups<I extends { id: string }, G extends PaletteGroupLike<I>>(groups: G[]): G[] {
+export function filterPaletteGroups<I extends { action?: string; id: string }, G extends PaletteGroupLike<I>>(
+  groups: G[]
+): G[] {
   const p = policy()
 
   if (!p) {
@@ -331,7 +374,8 @@ export function filterPaletteGroups<I extends { id: string }, G extends PaletteG
   }
 
   const allowed = (item: I) =>
-    !CORE_PALETTE_PREFIXES.some(prefix => item.id.startsWith(prefix)) || p.paletteItems.has(item.id)
+    (!item.action || keybindActionAllowed({ id: item.action })) &&
+    (!CORE_PALETTE_PREFIXES.some(prefix => item.id.startsWith(prefix)) || p.paletteItems.has(item.id))
 
   return groups.map(group => ({ ...group, items: group.items.filter(allowed) })).filter(group => group.items.length > 0)
 }
