@@ -19,6 +19,8 @@ interface ProductIdentity {
   msixAppIdWithOrg: string
   /** App-icon directory (icon.png/.icns/.ico, icon-mac.png): "assets", or a distribution's own. */
   iconDir: string
+  /** Windows exe version-info strings (ProductName...), or null for upstream's. */
+  exeVersionStrings: Readonly<Record<string, string>> | null
   /** Default Hermes home: `~/.<name>` (macOS/Linux), `%LOCALAPPDATA%\<name>` (Windows). "hermes"
    *  upstream, a distribution's own otherwise. Absent on channel-build identities (= "hermes"). */
   readonly hermesHomeName?: string

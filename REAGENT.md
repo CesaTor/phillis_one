@@ -114,6 +114,8 @@ statusbar item appeared.
   should exclude those extras. `pillow-heif` (core) bundles GPLv2 x265 in its binary
   wheels despite declaring BSD-3. 12 Python packages still resolve to UNKNOWN. `gsap` has a
   non-OSI "no charge" license (a dependency of the web dashboard / `@nous-research/ui`).
+  The `silk` and `piper` extras are listed in `[tool.hermes] opt-in-extras` in `pyproject.toml`,
+  so the bundled payload no longer installs them (`pillow-heif` still needs a decision).
   LGPL-3.0 (`python-telegram-bot`, `edge-tts`) and MPL-2.0 (noVNC, certifi, ...) need their
   notices kept and the libraries replaceable. Have legal review these.
 - Backend prompt copy still names Hermes: every session carries upstream's help guidance

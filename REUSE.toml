@@ -23,6 +23,7 @@ path = [
   "apps/desktop/src/plugins/hermes-bots/cron-pane.primary-handle.test.tsx",
   "apps/desktop/src/plugins/hermes-bots/canonical-group-list-boot.test.tsx",
   "plugins/model-providers/requrv-hive/**",
+  "apps/desktop/scripts/set-exe-identity.reagent.test.mjs",
   "scripts/licenses/collect.mjs",
   "scripts/licenses/AUDIT.md",
   "scripts/licenses/pypi-cache.json",

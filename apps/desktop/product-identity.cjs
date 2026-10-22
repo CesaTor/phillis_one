@@ -90,6 +90,15 @@ const identity = {
   cliName,
   msixAppIdWithOrg: `${reagent ? 'ReQurv' : 'NousResearch'}.${name.pascal}${pascalSuffix}`,
   iconDir: reagent ? 'assets/reagent' : 'assets',
+  // Windows exe version-info strings; null keeps upstream's (set-exe-identity.mjs).
+  exeVersionStrings: reagent
+    ? {
+        ProductName: 'ReAgent',
+        FileDescription: 'ReAgent',
+        CompanyName: 'ReQurv',
+        LegalCopyright: 'Copyright (c) 2026 ReQurv'
+      }
+    : null,
   // ReAgent keeps its own state (~/.reagent): it must never share config,
   // memories, sessions or the gateway with a Hermes install on the machine.
   hermesHomeName: reagent ? 'reagent' : 'hermes',

@@ -37,6 +37,7 @@
 
 import { resolve, join } from 'node:path'
 import { existsSync } from 'node:fs'
+import { createRequire } from 'node:module'
 
 import { rcedit } from 'rcedit'
 
@@ -62,20 +63,22 @@ function wait(delay) {
   return new Promise(resolve => setTimeout(resolve, delay))
 }
 
-// Stamp the Hermes icon + identity onto `exe`. Resolves on success, throws on
+const productIdentity = createRequire(import.meta.url)('../product-identity.cjs')
+
+// Stamp the product's icon + identity (Hermes upstream, ReAgent's own for that distribution) onto `exe`. Resolves on success, throws on
 // failure. `desktopRoot` defaults to this script's package root so the icon and
 // the rcedit dependency resolve regardless of cwd.
 async function stampExeIdentity(
   exe,
   desktopRoot = resolve(import.meta.dirname, '..'),
-  { rcedit: runRcedit = rcedit, sleep = wait } = {}
+  { rcedit: runRcedit = rcedit, sleep = wait, identity = productIdentity } = {}
 ) {
   if (!exe || !existsSync(exe)) {
     throw new Error(`target exe not found: ${exe}`)
   }
 
-  // Icon lives at apps/desktop/assets/icon.ico
-  const icon = join(desktopRoot, 'assets', 'icon.ico')
+  // Icon lives at apps/desktop/assets/icon.ico (a distribution's own under its iconDir)
+  const icon = join(desktopRoot, identity.iconDir, 'icon.ico')
   if (!existsSync(icon)) {
     throw new Error(`icon not found: ${icon}`)
   }
@@ -85,7 +88,7 @@ async function stampExeIdentity(
 
   const options = {
     icon,
-    'version-string': {
+    'version-string': identity.exeVersionStrings ?? {
       ProductName: 'Hermes',
       FileDescription: 'Hermes',
       CompanyName: 'Nous Research',
