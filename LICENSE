@@ -1,3 +1,21 @@
+Licensing of this repository
+============================
+
+This repository combines files under different licenses; the license depends
+on the file. See LICENSING.md (and REUSE.toml for the machine-readable map).
+
+  - Hermes Agent by Nous Research, and the small edits made to those files:
+    MIT License, reproduced below, unchanged.
+  - ReQurv Works (ReAgent distribution layer, ReQurv Hive provider plugin,
+    ReQurv brand assets and the files listed in REUSE.toml): All Rights
+    Reserved, see LICENSES/LicenseRef-ReQurv-Proprietary.txt. No license is
+    granted to them by the MIT text below.
+  - Other third-party files: the license stated in their directory or file.
+
+----------------------------------------------------------------------------
+MIT License text for the Nous Research files (unchanged)
+----------------------------------------------------------------------------
+
 MIT License
 
 Copyright (c) 2025 Nous Research

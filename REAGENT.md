@@ -1,5 +1,8 @@
 # ReAgent — ReQurv's distribution of Hermes Desktop
 
+> **Licensing.** The ReQurv parts of this repository are **All Rights Reserved**; Hermes files
+> stay MIT. See [LICENSING.md](LICENSING.md) before reusing, forking or publishing anything from it.
+
 ReAgent is upstream Hermes Desktop with a curated surface, ReQurv Hive as its only
 model provider, local-only execution and ReQurv branding. It lives on the `reagent`
 branch as a small stack of commits over upstream `main`.

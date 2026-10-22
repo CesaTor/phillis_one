@@ -1,0 +1,32 @@
+ReQurv Proprietary License — All Rights Reserved
+
+Copyright (c) 2026 ReQurv. All rights reserved.
+
+1. Scope. This notice covers the files that LICENSING.md and REUSE.toml
+   identify as "ReQurv Works". It does not cover files written by Nous
+   Research (MIT License) or by other third parties; those keep their own
+   licenses.
+
+2. No license is granted. Except as ReQurv expressly agrees in a signed
+   written agreement, you may not use, copy, modify, merge, publish,
+   distribute, sublicense, sell, host, offer as a service, or create
+   derivative works of the ReQurv Works, in whole or in part.
+
+3. GitHub. The rights that GitHub's Terms of Service give users of the
+   platform (viewing a public repository and forking it within GitHub) are
+   not affected by this notice. They are not a license to use the ReQurv
+   Works for any other purpose.
+
+4. Trademarks. "ReQurv", "ReAgent", "ReQurv Hive", the ReQurv logos and the
+   ReQurv theme are the property of ReQurv. No right to use them is granted.
+
+5. Contributions. ReQurv accepts contributions to the ReQurv Works only
+   under a written assignment or contributor agreement.
+
+6. No warranty. The ReQurv Works are provided "as is", without warranty of
+   any kind, express or implied, including merchantability, fitness for a
+   particular purpose and non-infringement. In no event shall ReQurv be
+   liable for any claim, damages or other liability arising from their use.
+
+7. Other licenses. ReQurv may offer the ReQurv Works under separate terms on
+   request. Contact: licensing@requrv.io
