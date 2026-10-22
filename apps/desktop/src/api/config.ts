@@ -1,4 +1,4 @@
-import { filterOAuthProviders } from '@/distribution'
+import { distributionFiltered, filterOAuthProviders } from '@/distribution'
 import type {
   ConfigSchemaResponse,
   CustomEndpointsResponse,
@@ -314,12 +314,13 @@ export function deleteCustomEndpoint(id: string, profile?: null | string): Promi
 }
 
 export function listOAuthProviders(profile?: ProfileScope): Promise<OAuthProvidersResponse> {
-  return window.hermesDesktop
-    .api<OAuthProvidersResponse>({
+  return distributionFiltered(
+    window.hermesDesktop.api<OAuthProvidersResponse>({
       ...capabilityScoped(profile),
       path: '/api/providers/oauth'
-    })
-    .then(filterOAuthProviders)
+    }),
+    filterOAuthProviders
+  )
 }
 
 export function disconnectOAuthProvider(

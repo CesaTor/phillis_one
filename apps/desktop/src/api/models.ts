@@ -1,6 +1,6 @@
 import type { ModelOptionsResult } from '@hermes/shared'
 
-import { filterModelOptions } from '@/distribution'
+import { distributionFiltered, filterModelOptions } from '@/distribution'
 import type {
   AnalyticsResponse,
   AuxiliaryModelsResponse,
@@ -55,13 +55,14 @@ export function getGlobalModelOptions(
     params.set('explicit_only', '1')
   }
 
-  return window.hermesDesktop
-    .api<ModelOptionsResult>({
+  return distributionFiltered(
+    window.hermesDesktop.api<ModelOptionsResult>({
       ...capabilityScoped(profile),
       path: params.size > 0 ? `/api/model/options?${params.toString()}` : '/api/model/options',
       timeoutMs: STARTUP_REQUEST_TIMEOUT_MS
-    })
-    .then(filterModelOptions)
+    }),
+    filterModelOptions
+  )
 }
 
 export interface RecommendedDefaultModel {

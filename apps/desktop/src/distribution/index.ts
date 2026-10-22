@@ -200,6 +200,12 @@ export function filterModelOptions<R extends { providers?: { slug: string }[] }>
     : result
 }
 
+/** `request` through `filter` when a distribution curates it; upstream gets the very same promise
+ *  back, so its timing (one microtask less) is exactly upstream's. */
+export function distributionFiltered<R>(request: Promise<R>, filter: (result: R) => R): Promise<R> {
+  return policy() ? request.then(filter) : request
+}
+
 export function filterOAuthProviders<R extends { providers: { id: string }[] }>(result: R): R {
   const p = policy()
 
