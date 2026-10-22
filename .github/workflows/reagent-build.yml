@@ -17,6 +17,11 @@ name: ReAgent build
 #   - Windows: an unsigned MSIX installs only with developer sideloading turned on
 #     (Settings > System > For developers) and a package signed or trusted by you.
 #
+# Release builds are the product identity: a run with a release tag builds HEAD through
+# Hermes's version-tag path (build-bundle --tag vX.Y.Z), so the app is plain "ReAgent"
+# (appId ai.requrv.reagent, version X.Y.Z, MSIX ReQurv.ReAgent) and still has no
+# update feed. Nothing is pushed: the script makes a local claim tag and deletes it.
+#
 # Commit builds are not the final product identity. The driver names a build of a
 # bare commit "ReAgent <sha7>" (apps/desktop/product-identity.cjs: buildCommit):
 # its own app id, MSIX family and CLI name, so it installs side by side with
@@ -27,17 +32,29 @@ name: ReAgent build
 # or Actions > ReAgent build > Run workflow (optional ref: branch, tag or full SHA;
 # empty builds the branch the run was started from).
 #
-# Pushing a reagent-build-* tag starts only this workflow: the one inherited
+# Release build (clean ReAgent identity):
+#   git tag reagent-v0.1.0 && git push origin reagent-v0.1.0
+# or Actions > ReAgent build > Run workflow with release_tag = v0.1.0.
+# The release tag is vX.Y.Z (no canary form). It need not exist as a git tag and need not
+# match pyproject.toml's version (the app version comes from the tag).
+#
+# Pushing a reagent-build-* or reagent-v* tag starts only this workflow: the one inherited
 # workflow that listens to tag pushes (live-providers.yml) matches v*.
 
 on:
   push:
     tags:
       - 'reagent-build-*'
+      - 'reagent-v*'
   workflow_dispatch:
     inputs:
       ref:
         description: Branch, tag or full SHA to build (empty = the ref this run was started from)
+        required: false
+        default: ''
+        type: string
+      release_tag:
+        description: Release tag vX.Y.Z to build as the clean ReAgent identity (empty = a commit build, unless a reagent-v* tag started this run)
         required: false
         default: ''
         type: string
@@ -142,12 +159,23 @@ jobs:
       - name: Build and package (unsigned)
         shell: bash
         timeout-minutes: 340
+        env:
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
+          # A reagent-v1.2.3 tag push builds release v1.2.3; the dispatch input wins.
+          release_tag="$INPUT_RELEASE_TAG"
+          if [ -z "$release_tag" ] && [ "$REF_TYPE" = tag ]; then
+            case "$REF_NAME" in reagent-v*) release_tag="${REF_NAME#reagent-}" ;; esac
+          fi
+          build_args=()
+          if [ -n "$release_tag" ]; then build_args=(--tag "$release_tag"); fi
           log_dir="$RUNNER_TEMP/reagent-logs"
           mkdir -p "$log_dir"
           ulimit -n 16384 2>/dev/null || true
           echo "file descriptor limit: soft=$(ulimit -Sn) hard=$(ulimit -Hn)"
-          scripts/build-bundle.sh 2>&1 | tee "$log_dir/build.log"
+          scripts/build-bundle.sh ${build_args[@]+"${build_args[@]}"} 2>&1 | tee "$log_dir/build.log"
 
       - name: List the packages
         if: always()
@@ -304,11 +332,22 @@ jobs:
         shell: pwsh
         timeout-minutes: 340
         working-directory: C:\hsb
+        env:
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           $ErrorActionPreference = 'Continue'
+          # A reagent-v1.2.3 tag push builds release v1.2.3; the dispatch input wins.
+          $releaseTag = $env:INPUT_RELEASE_TAG
+          if (-not $releaseTag -and $env:REF_TYPE -eq 'tag' -and $env:REF_NAME -like 'reagent-v*') {
+            $releaseTag = $env:REF_NAME.Substring('reagent-'.Length)
+          }
+          $buildArgs = @{}
+          if ($releaseTag) { $buildArgs.Tag = $releaseTag }
           New-Item -ItemType Directory -Force -Path $env:LOG_DIR | Out-Null
           $global:LASTEXITCODE = 0
-          & .\scripts\build-bundle.ps1 *>&1 | Tee-Object -FilePath (Join-Path $env:LOG_DIR 'build.log')
+          & .\scripts\build-bundle.ps1 @buildArgs *>&1 | Tee-Object -FilePath (Join-Path $env:LOG_DIR 'build.log')
           exit $LASTEXITCODE
 
       - name: List the packages

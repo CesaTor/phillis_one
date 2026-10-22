@@ -5,6 +5,8 @@
 .DESCRIPTION
   scripts\build-bundle.ps1             Sideload MSIX (bundled variant) for this machine's architecture.
   scripts\build-bundle.ps1 -Store      Microsoft Store MSIX (Store identity).
+  scripts\build-bundle.ps1 -Tag vX.Y.Z Sideload MSIX of release vX.Y.Z (the plain product identity,
+                                       not a commit build). Same local claim tag as -Store; nothing is pushed.
 
   The commit does not need to be pushed. The checkout must be clean: the build
   packages HEAD. Output goes to apps\desktop\release\. The script removes the
@@ -27,6 +29,10 @@
 .PARAMETER Store
   Build the Store package instead of the sideload package.
 
+.PARAMETER Tag
+  Release tag (vX.Y.Z) to build HEAD as. Needs no remote and no existing tag: the script
+  makes the local claim tag itself. Not combined with -Store.
+
 .PARAMETER Python
   Python 3.11+ to run the driver. Default: the first suitable python on PATH.
 
@@ -36,6 +42,7 @@
 [CmdletBinding()]
 param(
   [switch]$Store,
+  [string]$Tag = '',
   [string]$Python = '',
   [string]$Remote = 'origin'
 )
@@ -87,7 +94,9 @@ function Get-ClaimVersion {
 
 # One past the highest attempt for this version, counting local and remote refs.
 function Get-ClaimAttempt([string]$Version) {
-  $refs = @(Git-Lines tag --list "rc.*-v$Version") + @(Git-Lines ls-remote --tags $Remote "refs/tags/rc.*-v$Version")
+  $refs = @(Git-Lines tag --list "rc.*-v$Version")
+  # -Tag needs no remote (CI's checkout carries no credential for ls-remote); the claim is local only.
+  if (-not $Tag) { $refs += @(Git-Lines ls-remote --tags $Remote "refs/tags/rc.*-v$Version") }
   $highest = $LocalAttemptFloor - 1
   foreach ($ref in $refs) {
     if ($ref -match "rc\.([1-9]\d*)-v$([regex]::Escape($Version))$" -and [int]$Matches[1] -gt $highest) {
@@ -96,6 +105,9 @@ function Get-ClaimAttempt([string]$Version) {
   }
   return $highest + 1
 }
+
+if ($Tag -and $Store) { Fail '-Tag and -Store cannot be combined (-Store derives its own version).' }
+if ($Tag -and $Tag -notmatch '^v(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$') { Fail "-Tag must look like vX.Y.Z, got '$Tag'." }
 
 Set-Location $Repo
 $py = Find-Python
@@ -122,8 +134,8 @@ foreach ($name in $buildVariables | Where-Object { $_ -like 'AZURE_*' }) { Remov
 $env:PYTHONUTF8 = '1'
 $claim = $null
 try {
-  if ($Store) {
-    $version = Get-ClaimVersion
+  if ($Store -or $Tag) {
+    $version = if ($Tag) { $Tag.Substring(1) } else { Get-ClaimVersion }
     $claim = "rc.$(Get-ClaimAttempt $version)-v$version"
     # Pass -c for identity and signing so a machine without a git identity, or with signed tags on, still works.
     & git -c user.name=hermes-local-build -c user.email=local-build@invalid -c tag.gpgSign=false `
@@ -139,14 +151,20 @@ try {
     $env:HERMES_PAYLOAD_TAG = "v$version"
     $env:HERMES_PAYLOAD_VERSION = $version
     $env:HERMES_DESKTOP_VARIANT = 'bundled'
-    Write-Host "build-bundle: building $sha as Store v$version (local claim $claim)"
-    # Prepare as bundled, then package as store from that preparation, as CI does.
-    $work = Join-Path $Repo '.build\desktop-job'
-    & $py scripts/bundles/desktop.py --tag "v$version" --release-commit $sha --variant bundled --prepare-only `
-      --work $work --cache (Join-Path $Repo '.cache\desktop-inputs') --clean
-    if ($LASTEXITCODE) { Fail "preparation failed (exit $LASTEXITCODE)" }
-    & $py scripts/bundles/desktop.py --prepared (Join-Path $work 'prepared.json') --variant store
-    if ($LASTEXITCODE) { Fail "Store packaging failed (exit $LASTEXITCODE)" }
+    if ($Tag) {
+      Write-Host "build-bundle: building $sha as release v$version (sideload, local claim $claim)"
+      & $py scripts/bundles/desktop.py --tag "v$version" --release-commit $sha --variant bundled --clean
+      if ($LASTEXITCODE) { Fail "build failed (exit $LASTEXITCODE)" }
+    } else {
+      Write-Host "build-bundle: building $sha as Store v$version (local claim $claim)"
+      # Prepare as bundled, then package as store from that preparation, as CI does.
+      $work = Join-Path $Repo '.build\desktop-job'
+      & $py scripts/bundles/desktop.py --tag "v$version" --release-commit $sha --variant bundled --prepare-only `
+        --work $work --cache (Join-Path $Repo '.cache\desktop-inputs') --clean
+      if ($LASTEXITCODE) { Fail "preparation failed (exit $LASTEXITCODE)" }
+      & $py scripts/bundles/desktop.py --prepared (Join-Path $work 'prepared.json') --variant store
+      if ($LASTEXITCODE) { Fail "Store packaging failed (exit $LASTEXITCODE)" }
+    }
   } else {
     Write-Host "build-bundle: building $sha (sideload)"
     & $py scripts/bundles/desktop.py --commit $sha --variant bundled --clean
@@ -163,7 +181,7 @@ try {
 }
 
 Write-Host "build-bundle: done. Unsigned packages in $Repo\apps\desktop\release:"
-if ($Store) {
+if ($Store -or $Tag) {
   Write-Host "build-bundle: claim timestamp for combining architectures: HERMES_RELEASE_EPOCH=$claimEpoch (version v$version)"
 }
 Get-ChildItem (Join-Path $Repo 'apps\desktop\release') -Filter '*.msix*' |
