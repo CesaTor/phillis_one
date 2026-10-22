@@ -30,6 +30,8 @@ interface DistributionPolicy {
   defaultBotHandle: string
   /** The `default` profile's bot name until the user gives it a title. */
   defaultBotName: string
+  /** The theme a profile paints until it picks one (`DEFAULT_SKIN_NAME`). Absent: upstream's `nous`. */
+  defaultTheme: string
   /** Full logo shown where upstream letters its wordmark (empty chat), per rendered theme. */
   logo: null | Readonly<{ dark: string; light: string }>
   /** Upstream URLs this distribution answers itself (release notes, docs). Others open as-is. */
@@ -59,6 +61,8 @@ interface DistributionPolicy {
   sharedMetrics: boolean
   /** Core statusbar items (plugin-contributed items pass). */
   statusbarItems: ReadonlySet<string>
+  /** Built-in themes this distribution owns (`src/distribution/theme.ts`), by name. Upstream has none. */
+  themes: ReadonlySet<string>
   /** Built-in sidebar nav rows (`SIDEBAR_NAV` ids). */
   sidebarNav: ReadonlySet<string>
   /** Fixed titlebar tools (`TITLEBAR_FIXED_TOOLS` ids) bar the left-sidebar toggle; pane and plugin
@@ -79,6 +83,7 @@ const REAGENT: DistributionPolicy = {
   credentialKeys: /^REQURV_HIVE_/,
   defaultBotHandle: 'requrv',
   defaultBotName: 'ReQurv',
+  defaultTheme: 'requrv',
   logo: { dark: 'reagent/logo-dark.webp', light: 'reagent/logo-light.webp' },
   links: {
     // ReAgent ships from its fork's branch, not tagged releases: its commits are its notes.
@@ -117,6 +122,7 @@ const REAGENT: DistributionPolicy = {
   // Not `layout` (the layout editor) or `hud` (the floating HUD window): ReAgent keeps its preset
   // layout and lives in its own window.
   titlebarTools: new Set(['settings', 'flip-panes', 'right-sidebar']),
+  themes: new Set(['requrv']),
   views: new Set<AppView>(['chat', 'extension', 'settings', 'starmap']),
   voice: false
 }
@@ -301,6 +307,16 @@ export function defaultBotHandle(): string {
 
 export function defaultBotName(): string {
   return policy()?.defaultBotName ?? 'Hermes'
+}
+
+/** The theme a profile paints before it picks one; undefined leaves upstream's default (`nous`). */
+export function defaultThemeName(): string | undefined {
+  return policy()?.defaultTheme
+}
+
+/** Whether a distribution-owned built-in theme is registered. Upstream owns none, so none registers. */
+export function themeAllowed(name: string): boolean {
+  return policy()?.themes.has(name) ?? false
 }
 
 export function settingsViewAllowed(view: string): boolean {

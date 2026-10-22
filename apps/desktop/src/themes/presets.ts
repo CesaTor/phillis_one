@@ -20,6 +20,8 @@
 
 import { THEME_PRESET_PALETTES } from '@hermes/shared'
 
+import { distributionDefaultTheme, distributionThemes } from '@/distribution/theme'
+
 import { skinToDesktopTheme } from './skin'
 import type { DesktopTheme, DesktopThemeTypography } from './types'
 
@@ -442,6 +444,7 @@ export const slateTheme: DesktopTheme = {
 }
 
 export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
+  ...distributionThemes(),
   nous: nousTheme,
   github: githubTheme,
   catppuccin: catppuccinTheme,
@@ -459,7 +462,7 @@ export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
 export const BUILTIN_THEME_LIST = Object.values(BUILTIN_THEMES)
 
 /** Skin used when nothing is persisted or the persisted name is retired. */
-export const DEFAULT_SKIN_NAME = 'nous'
+export const DEFAULT_SKIN_NAME = distributionDefaultTheme() ?? 'nous'
 
 /** Names that no longer resolve to a skin of their own. A stored pick of one
  *  falls back to DEFAULT_SKIN_NAME, and a cached backend theme under one is
