@@ -75,7 +75,7 @@ describe('upstream Hermes (no distribution)', () => {
     expect(filterModelOptions(catalog).providers).toHaveLength(3)
     expect(remoteConnectionsAllowed()).toBe(true)
     expect(distributionAsset('nous-girl.png')).toBe('nous-girl.png')
-    expect(distributionLogo('dark')).toBeNull()
+    expect(distributionLogo()).toBeNull()
     expect(distributionLink('https://github.com/NousResearch/hermes-agent/releases')).toBe(
       'https://github.com/NousResearch/hermes-agent/releases'
     )
@@ -207,7 +207,7 @@ describe('ReAgent', () => {
 
     expect(remoteConnectionsAllowed()).toBe(false)
     expect(distributionAsset('nous-girl-dark.png')).toBe('reagent/mark.png')
-    expect(distributionLogo('light')).toBe('reagent/logo-light.webp')
+    expect(distributionLogo()).toBe('reagent/logo-dark.webp')
     expect(distributionLink('https://github.com/NousResearch/hermes-agent/releases')).toBe(
       'https://github.com/CesaTor/phillis_one/commits/reagent'
     )

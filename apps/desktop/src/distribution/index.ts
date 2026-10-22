@@ -32,8 +32,9 @@ interface DistributionPolicy {
   defaultBotName: string
   /** The theme a profile paints until it picks one (`DEFAULT_SKIN_NAME`). Absent: upstream's `nous`. */
   defaultTheme: string
-  /** Full logo shown where upstream letters its wordmark (empty chat), per rendered theme. */
-  logo: null | Readonly<{ dark: string; light: string }>
+  /** Full logo shown where upstream letters its wordmark (empty chat). One artwork, made for dark
+   *  backgrounds: the light theme shows it on a dark plate instead of recolouring it. */
+  logo: null | string
   /** Upstream URLs this distribution answers itself (release notes, docs). Others open as-is. */
   links: Readonly<Record<string, string>>
   /** Reasoning levels per `<provider>/<model>` where narrower than the shared ladder. Mirrors the
@@ -84,7 +85,7 @@ const REAGENT: DistributionPolicy = {
   defaultBotHandle: 'requrv',
   defaultBotName: 'ReQurv',
   defaultTheme: 'requrv',
-  logo: { dark: 'reagent/logo-dark.webp', light: 'reagent/logo-light.webp' },
+  logo: 'reagent/logo-dark.webp',
   links: {
     // ReAgent ships from its fork's branch, not tagged releases: its commits are its notes.
     'https://github.com/NousResearch/hermes-agent/releases': 'https://github.com/CesaTor/phillis_one/commits/reagent'
@@ -290,9 +291,9 @@ export function distributionAsset(path: string): string {
   return policy()?.assets[path] ?? path
 }
 
-/** The full logo for a rendered theme; null where upstream's lettering stays. */
-export function distributionLogo(mode: 'dark' | 'light'): null | string {
-  return policy()?.logo?.[mode] ?? null
+/** The full logo; null where upstream's lettering stays. */
+export function distributionLogo(): null | string {
+  return policy()?.logo ?? null
 }
 
 /** `url`, or the page this distribution puts in its place. */

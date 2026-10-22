@@ -31,7 +31,7 @@ Without `HERMES_DISTRIBUTION` the tree builds upstream Hermes, unchanged.
 | Product names in copy | `apps/desktop/src/distribution/branding.ts` | applied to the resolved i18n catalog |
 | App identity | `apps/desktop/product-identity.cjs` | name, appId, CLI, no Nous release feed, `iconDir`, `hermesHomeName` |
 | Own home (`~/.reagent`, `%LOCALAPPDATA%\reagent`) | `apps/desktop/electron/product-home.ts` | default home from `hermesHomeName`; exported as `HERMES_HOME` to every child; never adopts a Hermes install's runtime |
-| Brand assets | `apps/desktop/assets/reagent/` (app icons, sources, `generate.py`), `apps/desktop/public/reagent/` (in-app mark, light/dark logo) | swapped in by `iconDir`, `distributionAsset`, `DistributionLogo` |
+| Brand assets | `apps/desktop/assets/reagent/` (app icons, sources, `generate.py`), `apps/desktop/public/reagent/` (in-app mark, logo, ReQurv theme fonts) | swapped in by `iconDir`, `distributionAsset`, `DistributionLogo` |
 | First-run seeds | `apps/desktop/src/distribution/seed.ts` | names the unnamed `default` bot "ReQurv" |
 | ReQurv Hive provider | `plugins/model-providers/requrv-hive/` | OpenAI-compatible, `REQURV_HIVE_API_KEY`, `requrv-small-3.8` (256k) |
 | Contract tests | `apps/desktop/src/distribution/*.test.ts`, `apps/desktop/electron/product-home.test.ts`, `tests/providers/test_requrv_hive_profile.py` | |

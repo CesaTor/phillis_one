@@ -3,12 +3,12 @@
     python3 generate.py source-icon.webp source-logo.webp <out-dir>
 
 Writes mark.png (in-app badge) and logo-dark.png; icon.png / icon-mac.png / icon.ico
-for packaging (build icon.icns from icon-mac.png with sips + iconutil). The light-theme
-logo is logo-dark with its white letters inked indigo (see logo_light below). Copy
-mark.png and the logos (as .webp) to public/reagent/, the icons to assets/reagent/.
+for packaging (build icon.icns from icon-mac.png with sips + iconutil). The logo is one artwork for
+dark backgrounds (the light theme shows it on a dark plate). Copy mark.png and logo-dark.png
+(as .webp) to public/reagent/, the icons to assets/reagent/.
 """
 import sys
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw
 src_icon, src_logo, out = sys.argv[1], sys.argv[2], sys.argv[3]
 
 icon = Image.open(src_icon).convert('RGBA')
@@ -34,13 +34,4 @@ mark.save(f'{out}/icon.ico', sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64,
 logo = Image.open(src_logo).convert('RGBA')
 logo = logo.crop(logo.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox())
 logo.save(f'{out}/logo-dark.png')
-# Light theme: white letters go deep indigo, the purple glow keeps its hue. The mask is the
-# darkest channel (white is bright in all three, the glow is not), blurred so WebP noise
-# does not speckle the letters.
-r, g, b, a = logo.split()
-low = ImageChops.darker(ImageChops.darker(r, g), b).filter(ImageFilter.GaussianBlur(1.2))
-white = low.point(lambda v: 0 if v <= 150 else 255 if v >= 225 else round((v - 150) * 255 / 75))
-light = Image.composite(Image.new('RGBA', logo.size, (30, 27, 75, 255)), logo, white)
-light.putalpha(a)
-light.save(f'{out}/logo-light.png')
 print('mark', mark.size, 'logo', logo.size)
