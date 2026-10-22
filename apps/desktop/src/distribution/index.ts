@@ -32,8 +32,7 @@ interface DistributionPolicy {
   defaultBotName: string
   /** The theme a profile paints until it picks one (`DEFAULT_SKIN_NAME`). Absent: upstream's `nous`. */
   defaultTheme: string
-  /** Full logo shown where upstream letters its wordmark (empty chat). One artwork, made for dark
-   *  backgrounds: the light theme shows it on a dark plate instead of recolouring it. */
+  /** Full logo shown where upstream letters its wordmark (empty chat): one transparent artwork, every theme. */
   logo: null | string
   /** Upstream URLs this distribution answers itself (release notes, docs). Others open as-is. */
   links: Readonly<Record<string, string>>

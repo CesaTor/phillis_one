@@ -3,8 +3,8 @@
     python3 generate.py source-icon.webp source-logo.webp <out-dir>
 
 Writes mark.png (in-app badge) and logo-dark.png; icon.png / icon-mac.png / icon.ico
-for packaging (build icon.icns from icon-mac.png with sips + iconutil). The logo is one artwork for
-dark backgrounds (the light theme shows it on a dark plate). Copy mark.png and logo-dark.png
+for packaging (build icon.icns from icon-mac.png with sips + iconutil). The logo is one transparent
+artwork shown as-is on every theme. Copy mark.png and logo-dark.png
 (as .webp) to public/reagent/, the icons to assets/reagent/.
 """
 import sys
