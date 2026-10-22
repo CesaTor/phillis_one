@@ -9,6 +9,7 @@ import { atom, computed, type ReadableAtom } from 'nanostores'
 import { SIDEBAR_COLLAPSE_MEDIA_QUERY } from '@/app/layout-constants'
 import { setPluginEnabled } from '@/contrib/plugins-store'
 import { registry } from '@/contrib/registry'
+import { dockEnforced } from '@/distribution'
 import { translateNow } from '@/i18n'
 import { LAYOUT_KEYS } from '@/lib/layout-persistence'
 import { Codecs } from '@/lib/persisted'
@@ -1474,7 +1475,7 @@ function enforceDockedPanes(
   for (const pane of registry.getArea('panes')) {
     const dock = dataOf(pane.id)?.dock
 
-    if (!dock?.enforce || !allPaneIds(next).includes(pane.id)) {
+    if (!dock?.enforce || !dockEnforced(pane.id) || !allPaneIds(next).includes(pane.id)) {
       continue
     }
 

@@ -119,7 +119,7 @@ test.skipIf(process.platform === 'win32')(
 
       vi.stubEnv('HOME', home)
 
-      const resolveActive = async (identity: typeof REAGENT) => {
+      const resolveActive = async (identity: typeof REAGENT | typeof UPSTREAM) => {
         const hermesHome = resolveProductHermesHome({ home, env: {}, platform: 'linux' }, identity)
 
         // main.ts: ACTIVE_HERMES_ROOT = <HERMES_HOME>/hermes-agent

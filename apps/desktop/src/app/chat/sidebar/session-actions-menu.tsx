@@ -24,6 +24,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { CopyButton } from '@/components/ui/copy-button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { sessionsPartAllowed } from '@/distribution'
 import { renameSession } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
@@ -576,15 +577,17 @@ function useSessionActions({
       />
       <kit.Separator />
       {workItems.map(item => renderActionItem(kit, item))}
-      <kit.Sub>
-        <kit.SubTrigger disabled={!sessionId}>
-          <Codicon name="folder" size="0.875rem" />
-          <span>{t.sidebar.projects.moveToProject}</span>
-        </kit.SubTrigger>
-        <kit.SubContent>
-          <MoveToProjectItems kit={kit} profile={profile} sessionId={sessionId} />
-        </kit.SubContent>
-      </kit.Sub>
+      {sessionsPartAllowed('projects') && (
+        <kit.Sub>
+          <kit.SubTrigger disabled={!sessionId}>
+            <Codicon name="folder" size="0.875rem" />
+            <span>{t.sidebar.projects.moveToProject}</span>
+          </kit.SubTrigger>
+          <kit.SubContent>
+            <MoveToProjectItems kit={kit} profile={profile} sessionId={sessionId} />
+          </kit.SubContent>
+        </kit.Sub>
+      )}
       {tabItems.length > 0 && (
         <>
           <kit.Separator />

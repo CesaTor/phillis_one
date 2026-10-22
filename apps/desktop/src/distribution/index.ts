@@ -14,6 +14,8 @@ import type { AppView } from '@/app/routes'
 
 export type DistributionId = 'hermes' | 'reagent'
 
+export type SessionsPart = 'cron' | 'filters' | 'messaging' | 'profiles' | 'projects'
+
 interface DistributionPolicy {
   /** "Add provider…" doors in the model menus (Edit models, the model picker). */
   addProvider: boolean
@@ -52,9 +54,15 @@ interface DistributionPolicy {
   providers: ReadonlySet<string>
   /** Remote gateways (connect to an existing backend, Hermes Cloud). Off = local-only. */
   remoteConnections: boolean
-  /** The core Sessions pane (the SESSIONS tab beside BOTS). Off: it never registers, so it has no
-   *  tab, ⌘K toggle or zone-menu row, and the Bots pane docked in its zone is the whole sidebar. */
-  sessionsPane: boolean
+  /** Pane stacked ABOVE the Sessions pane, in the same sidebar column, by the default layouts
+   *  (upstream tabs the two). Its dock hint then stops re-homing it into the Sessions zone each boot. */
+  sidebarTopPane?: string
+  /** What the Sessions pane keeps of the machinery around a chat list; a part absent here is hidden.
+   *  `cron` scheduled-jobs section · `filters` the grouping/ordering/filter menu (the defaults stand:
+   *  grouped and ordered by last update) · `messaging` platform-thread sections · `profiles` the
+   *  profile rail and scope (the pane then always lists every bot's chats) · `projects` the New
+   *  project button and Move to project. */
+  sessionsParts: ReadonlySet<SessionsPart>
   /** Settings nav groups (a `SettingsView` id). */
   settingsGroups: ReadonlySet<string>
   /** Per group, the child rows kept; a group absent here keeps all of them. */
@@ -101,7 +109,9 @@ const REAGENT: DistributionPolicy = {
   pluginSurfaces: new Set(),
   providers: new Set(['requrv-hive']),
   remoteConnections: false,
-  sessionsPane: false,
+  // Sessions sits under the Bots pane as a plain list of every bot's chats.
+  sessionsParts: new Set(),
+  sidebarTopPane: 'hermes-bots:pane',
   settingsGroups: new Set([
     'config:model',
     'config:chat',
@@ -222,8 +232,18 @@ export function onboardingReasonAllowed(): boolean {
   return policy()?.onboardingReason ?? true
 }
 
-export function sessionsPaneAllowed(): boolean {
-  return policy()?.sessionsPane ?? true
+export function sessionsPartAllowed(part: SessionsPart): boolean {
+  return policy()?.sessionsParts.has(part) ?? true
+}
+
+/** The pane the default layouts stack above Sessions; undefined keeps upstream's tabbed zone. */
+export function sidebarTopPane(): string | undefined {
+  return policy()?.sidebarTopPane
+}
+
+/** Whether a pane's `dock.enforce` re-homing runs: not for the pane this distribution stacks itself. */
+export function dockEnforced(paneId: string): boolean {
+  return paneId !== policy()?.sidebarTopPane
 }
 
 /** Whether a plugin's optional surface shows (`ctx.surfaceAllowed`); upstream Hermes shows every one. */

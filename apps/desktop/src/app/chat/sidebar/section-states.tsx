@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { Skeleton } from '@/components/ui/skeleton'
+import { sessionsPartAllowed } from '@/distribution'
 import { useI18n } from '@/i18n'
 import { openExternalLink } from '@/lib/external-link'
 import { AlertTriangle, ExternalLink } from '@/lib/icons'
@@ -38,10 +39,12 @@ export function SidebarBlankState({ onNewProject }: { onNewProject: () => void }
       <div className="flex flex-col items-center gap-2">
         <Codicon className="text-(--ui-text-quaternary)" name="root-folder" size="1.25rem" />
         <p className="text-xs text-(--ui-text-tertiary)">{s.noSessions}</p>
-        <Button className="mt-0.5 text-(--ui-text-secondary)" onClick={onNewProject} size="sm" variant="ghost">
-          <Codicon name="add" size="0.75rem" />
-          {s.projects.newButton}
-        </Button>
+        {sessionsPartAllowed('projects') && (
+          <Button className="mt-0.5 text-(--ui-text-secondary)" onClick={onNewProject} size="sm" variant="ghost">
+            <Codicon name="add" size="0.75rem" />
+            {s.projects.newButton}
+          </Button>
+        )}
       </div>
     </div>
   )

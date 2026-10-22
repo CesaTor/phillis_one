@@ -20,6 +20,7 @@ import {
   distributionKeyOptions,
   distributionLink,
   distributionLogo,
+  dockEnforced,
   filterModelOptions,
   filterPaletteGroups,
   filterSettingsNav,
@@ -29,8 +30,9 @@ import {
   onboardingReasonAllowed,
   providerAllowed,
   remoteConnectionsAllowed,
-  sessionsPaneAllowed,
+  sessionsPartAllowed,
   sharedMetricsAllowed,
+  sidebarTopPane,
   titlebarToolAllowed
 } from '.'
 
@@ -84,8 +86,11 @@ describe('upstream Hermes (no distribution)', () => {
     expect(modelEffortAllowed('requrv-hive', 'requrv-small-3.8', 'high')).toBe(true)
   })
 
-  it('keeps the Sessions tab, add-provider doors, onboarding reason and choose-later', () => {
-    expect(sessionsPaneAllowed()).toBe(true)
+  it('keeps the Sessions machinery, add-provider doors, onboarding reason and choose-later', () => {
+    expect(sessionsPartAllowed('filters')).toBe(true)
+    expect(sessionsPartAllowed('cron')).toBe(true)
+    expect(sidebarTopPane()).toBeUndefined()
+    expect(dockEnforced('hermes-bots:pane')).toBe(true)
     expect(addProviderAllowed()).toBe(true)
     expect(onboardingReasonAllowed()).toBe(true)
     expect(chooseProviderLaterAllowed()).toBe(true)
@@ -170,10 +175,16 @@ describe('ReAgent', () => {
     expect(onboardingReasonAllowed()).toBe(false)
   })
 
-  it('makes Bots the whole sidebar: no Sessions pane', () => {
+  it('keeps Sessions a plain chat list under Bots: no filters, jobs, platform threads, rail or projects', () => {
     reagent()
 
-    expect(sessionsPaneAllowed()).toBe(false)
+    for (const part of ['cron', 'filters', 'messaging', 'profiles', 'projects'] as const) {
+      expect(sessionsPartAllowed(part)).toBe(false)
+    }
+
+    expect(sidebarTopPane()).toBe('hermes-bots:pane')
+    expect(dockEnforced('hermes-bots:pane')).toBe(false)
+    expect(dockEnforced('hermes-bots:routines')).toBe(true)
   })
 
   it("leaves the Bots pane's gateway-groups list out, and any plugin surface it never let in", () => {

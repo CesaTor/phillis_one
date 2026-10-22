@@ -1,45 +1,40 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-// ReAgent drops the core Sessions pane but keeps its tree slot as the Bots pane's dock anchor.
-// The contract: Bots lands in the sidebar zone AND is that zone's active pane, so pane visibility
-// (what the Bots plugin keys its bot chat and Routines pane on) agrees with what the user sees.
+// ReAgent's sidebar is the Bots pane stacked ABOVE the Sessions pane (not tabbed with it). The
+// contract: the default layouts come out stacked, and the Bots dock hint does not pull the pane
+// back into a tab beside Sessions on the next boot.
 
 const TREE_KEY = 'hermes.desktop.layoutTree.v2'
 const BOTS = 'hermes-bots:pane'
 
-const presetTree = {
+const defaultTree = {
   type: 'split',
   id: 'root',
   orientation: 'row',
   weights: [1, 3],
   children: [
-    { type: 'group', id: 'g-sessions', panes: ['sessions'], active: 'sessions' },
-    { type: 'group', id: 'g-main', panes: ['workspace'], active: 'workspace' }
+    { type: 'group', id: 'grp-sessions', panes: ['sessions'], active: 'sessions' },
+    { type: 'group', id: 'grp-main', panes: ['workspace'], active: 'workspace' }
   ]
 }
 
-async function boot() {
-  window.localStorage.setItem(TREE_KEY, JSON.stringify(presetTree))
+async function boot(persisted?: unknown) {
+  if (persisted) {
+    window.localStorage.setItem(TREE_KEY, JSON.stringify(persisted))
+  }
 
   const tree = await import('@/components/pane-shell/tree/store')
   const model = await import('@/components/pane-shell/tree/model')
   const { registry } = await import('@/contrib/registry')
-  const { sessionsPaneEnabled } = await import('./panes')
+  const { stackSidebar } = await import('./panes')
 
-  // The core registrations as controller.tsx makes them.
   registry.registerMany([
     { id: 'workspace', area: 'panes', title: 'chat', data: { placement: 'main' }, render: () => null },
-    {
-      id: 'sessions',
-      area: 'panes',
-      enabled: sessionsPaneEnabled(),
-      title: 'sessions',
-      data: { placement: 'left', hideOnly: true },
-      render: () => null
-    }
+    { id: 'sessions', area: 'panes', title: 'sessions', data: { placement: 'left', hideOnly: true }, render: () => null }
   ])
+  tree.declareDefaultTree(stackSidebar(defaultTree as never))
   tree.watchContributedPanes()
-  // The Bots plugin registers after core.
+  // The Bots plugin registers after core, with its dock hint as plugin.tsx declares it.
   registry.register({
     id: BOTS,
     area: 'panes',
@@ -48,12 +43,12 @@ async function boot() {
     render: () => null
   })
 
-  const sidebar = () => model.findGroupOfPane(tree.$layoutTree.get()!, BOTS)!
+  const groupOf = (pane: string) => model.findGroupOfPane(tree.$layoutTree.get()!, pane)!
 
-  return { registry, sidebar, tree }
+  return { groupOf, model, tree }
 }
 
-describe('Sessions pane policy', () => {
+describe('Sidebar layout policy', () => {
   beforeAll(async () => {
     await import('@/components/pane-shell/tree/store')
     vi.resetModules()
@@ -69,36 +64,73 @@ describe('Sessions pane policy', () => {
     vi.resetModules()
   })
 
-  it('upstream: SESSIONS | BOTS, sessions active', async () => {
-    const { registry, sidebar, tree } = await boot()
+  it('upstream: Sessions alone in its zone, Bots tabbed in beside it', async () => {
+    const { groupOf } = await boot()
 
-    expect(sidebar().panes).toEqual(['sessions', BOTS])
-    expect(sidebar().active).toBe('sessions')
-    expect(registry.getArea('panes').some(pane => pane.id === 'sessions')).toBe(true)
-    expect(tree.isPaneVisible(BOTS)).toBe(false)
+    expect(groupOf('sessions').panes).toEqual(['sessions', BOTS])
+    expect(groupOf(BOTS).id).toBe(groupOf('sessions').id)
   })
 
-  it('ReAgent: Bots docks into the sessions slot and is the active, visible pane', async () => {
+  it('ReAgent: the default layout stacks Bots over Sessions in one column', async () => {
     vi.stubEnv('HERMES_DISTRIBUTION', 'reagent')
 
-    const { registry, sidebar, tree } = await boot()
+    const { groupOf, model, tree } = await boot()
 
-    expect(sidebar().panes).toEqual(['sessions', BOTS])
-    expect(sidebar().active).toBe(BOTS)
+    expect(groupOf(BOTS).panes).toEqual([BOTS])
+    expect(groupOf('sessions').panes).toEqual(['sessions'])
+    expect(groupOf(BOTS).id).not.toBe(groupOf('sessions').id)
+    expect(model.findParentSplit(tree.$layoutTree.get()!, groupOf(BOTS).id)).toMatchObject({
+      orientation: 'column',
+      children: [{ id: groupOf(BOTS).id }, { id: groupOf('sessions').id }]
+    })
     expect(tree.isPaneVisible(BOTS)).toBe(true)
-    // No tab, ⌘K toggle or zone-menu row: those all read the registered panes.
-    expect(registry.getArea('panes').some(pane => pane.id === 'sessions')).toBe(false)
-    expect(tree.hideOnlyZoneTabs(sidebar().id).map(tab => tab.id)).toEqual([BOTS])
+    expect(tree.isPaneVisible('sessions')).toBe(true)
   })
 
-  it('ReAgent: a reveal of the sessions slot (⌘B, focus_pane) leaves Bots in front', async () => {
+  it('ReAgent: a boot does not re-stack Bots into the Sessions tab strip', async () => {
     vi.stubEnv('HERMES_DISTRIBUTION', 'reagent')
 
-    const { sidebar, tree } = await boot()
+    const stacked = {
+      type: 'split',
+      id: 'root',
+      orientation: 'row',
+      weights: [1, 3],
+      children: [
+        {
+          type: 'split',
+          id: 's-col',
+          orientation: 'column',
+          weights: [1, 1],
+          children: [
+            { type: 'group', id: 'grp-sessions', panes: [BOTS], active: BOTS },
+            { type: 'group', id: 'g-sessions', panes: ['sessions'], active: 'sessions' }
+          ]
+        },
+        { type: 'group', id: 'grp-main', panes: ['workspace'], active: 'workspace' }
+      ]
+    }
 
-    tree.revealTreePane('sessions')
+    const { groupOf } = await boot(stacked)
 
-    expect(sidebar().active).toBe(BOTS)
-    expect(tree.isPaneVisible(BOTS)).toBe(true)
+    expect(groupOf(BOTS).panes).toEqual([BOTS])
+    expect(groupOf('sessions').panes).toEqual(['sessions'])
+  })
+
+  it('upstream: a boot still re-homes a Bots pane dragged out of the Sessions zone', async () => {
+    const dragged = {
+      type: 'split',
+      id: 'root',
+      orientation: 'row',
+      weights: [1, 1, 3],
+      children: [
+        { type: 'group', id: 'grp-sessions', panes: ['sessions'], active: 'sessions' },
+        { type: 'group', id: 'g-bots', panes: [BOTS], active: BOTS },
+        { type: 'group', id: 'grp-main', panes: ['workspace'], active: 'workspace' }
+      ]
+    }
+
+    const { groupOf } = await boot(dragged)
+
+    expect(groupOf(BOTS).id).toBe(groupOf('sessions').id)
   })
 })

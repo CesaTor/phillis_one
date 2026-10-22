@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/sidebar'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
 import { useContributions } from '@/contrib/react/use-contributions'
-import { sidebarNavAllowed } from '@/distribution'
+import { sessionsPartAllowed, sidebarNavAllowed } from '@/distribution'
 import { type SessionInfo, type SessionSearchResult } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { comboTokens } from '@/lib/keybinds/combo'
@@ -442,6 +442,7 @@ export function ChatSidebar({
 
   const interfaceMode = useStore($interfaceMode)
   const showsAdvancedChrome = useStore($showsAdvancedChrome)
+  const showsCronJobs = showsAdvancedChrome && sessionsPartAllowed('cron')
 
   // Nav preferences (`sidebarNav.prefs` contributions): a plugin may hide rows
   // or re-order them. Merged here, at render, from the registry — so the
@@ -1319,7 +1320,7 @@ export function ChatSidebar({
   // within a platform by recency. Per-platform totals (when a "load more" has
   // resolved them) drive the count + whether more remain on disk.
   const messagingGroups = useMemo<MessagingSection[]>(() => {
-    if (!visibleMessagingSessions.length) {
+    if (!visibleMessagingSessions.length || !sessionsPartAllowed('messaging')) {
       return []
     }
 
@@ -1522,7 +1523,7 @@ export function ChatSidebar({
     sortedSessions.length > 0 ||
     projectModel.length > 0 ||
     messagingGroups.length > 0 ||
-    (showsAdvancedChrome && cronJobs.length > 0)
+    (showsCronJobs && cronJobs.length > 0)
 
   // The sidebar's session-area mode — exposed as data-attributes so custom
   // skins can target project mode (overview vs. entered), archived, or search
@@ -1936,9 +1937,11 @@ export function ChatSidebar({
                             }
                           }}
                         />
-                        <div className="grid size-6 place-items-center">
-                          <SidebarFilterMenu className={HEADER_NAV_BTN} />
-                        </div>
+                        {sessionsPartAllowed('filters') && (
+                          <div className="grid size-6 place-items-center">
+                            <SidebarFilterMenu className={HEADER_NAV_BTN} />
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -2044,7 +2047,7 @@ export function ChatSidebar({
                 )
               })}
 
-            {!trimmedQuery && !worktreeGroupingActive && showsAdvancedChrome && cronJobs.length > 0 && (
+            {!trimmedQuery && !worktreeGroupingActive && showsCronJobs && cronJobs.length > 0 && (
               <SidebarCronJobsSection
                 jobs={cronJobs}
                 label={s.cronJobs}
@@ -2062,7 +2065,7 @@ export function ChatSidebar({
 
         {/* Off, the statusbar's profile dropdown (beside the gateway switcher)
             takes over — the rail is a duplicate door for bot-only setups. */}
-        {profileRailVisible && (
+        {profileRailVisible && sessionsPartAllowed('profiles') && (
           <div className="shrink-0 px-0.5 pb-1 pt-0.5">
             <ProfileRail />
           </div>
