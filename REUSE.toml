@@ -25,6 +25,8 @@ path = [
   "apps/desktop/src/plugins/hermes-bots/canonical-group-list-boot.test.tsx",
   "plugins/model-providers/requrv-hive/**",
   "apps/desktop/scripts/set-exe-identity.reagent.test.mjs",
+  "apps/desktop/scripts/packaging-identity.reagent.test.mjs",
+  "apps/desktop/packaging/reagent/**",
   "scripts/licenses/collect.mjs",
   "scripts/licenses/AUDIT.md",
   "scripts/licenses/pypi-cache.json",

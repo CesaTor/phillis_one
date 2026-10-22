@@ -92,7 +92,7 @@ const manifest = substituteManifestMacros(template, (m) => {
     case "identityName": return resolvePackageIdentityName(options.identityName, appInfoName, "MSIX")
     case "executable": return executable
     case "displayName": return displayName
-    case "description": return pkg.description || config.productName
+    case "description": return appInfo.description || appInfo.productName
     case "backgroundColor": return options.backgroundColor || "#464646"
     case "logo": return "assets\\StoreLogo.png"
     case "square150x150Logo": return "assets\\Square150x150Logo.png"

@@ -19,6 +19,16 @@ interface ProductIdentity {
   msixAppIdWithOrg: string
   /** App-icon directory (icon.png/.icns/.ico, icon-mac.png): "assets", or a distribution's own. */
   iconDir: string
+  /** Installer artwork and store text (apps/desktop-relative paths). `description` and `copyright` are null for upstream's. */
+  packaging: {
+    dmgTitle: string
+    dmgBackground: string
+    dmgVolumeIcon: string
+    appxDir: string
+    publisherDisplayName: string
+    description: string | null
+    copyright: string | null
+  }
   /** Windows exe version-info strings (ProductName...), or null for upstream's. */
   exeVersionStrings: Readonly<Record<string, string>> | null
   /** Default Hermes home: `~/.<name>` (macOS/Linux), `%LOCALAPPDATA%\<name>` (Windows). "hermes"

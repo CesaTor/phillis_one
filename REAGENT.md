@@ -62,6 +62,37 @@ never adopts a Hermes runtime: not `~/.hermes/hermes-agent`, not the install a
 sandbox sets one), including a Windows user-scope one set with `setx`, which is
 process-wide by nature.
 
+## Building installers
+
+Hermes's own packaging (bundled variant: the Python backend ships inside the app) builds ReAgent
+unchanged; the release workflow it ships is tied to Nous's infrastructure and is not used.
+`.github/workflows/reagent-build.yml` builds **unsigned** packages on GitHub-hosted runners:
+
+```bash
+git tag reagent-build-N && git push origin reagent-build-N      # starts the run
+gh run list -R CesaTor/phillis_one -w "ReAgent build"           # find it
+gh run download <run-id> -R CesaTor/phillis_one -D out          # all artifacts (about 2.5 GB each)
+```
+
+| Target | Artifact | Time |
+|---|---|---|
+| macOS arm64 | `ReAgent-<v>-mac-arm64.dmg` + `.zip` | about 25 min |
+| macOS x64 | `ReAgent-<v>-mac-x64.dmg` + `.zip` | about 50 min |
+| Windows x64 | `ReAgent-<v>-win-x64.msix` | about 50 min |
+
+- **Identity.** A commit build is named `ReAgent <sha7>`, id `ai.requrv.reagent-<sha7>`, version `0.0.0`,
+  and installs beside other builds. The clean identity needs a version-tag build (`desktop.py --tag
+  vX.Y.Z`, the tag must match `pyproject.toml`); not wired up here yet.
+- **Unsigned.** macOS: right-click Open, or `xattr -dr com.apple.quarantine <app>`. Windows: an unsigned
+  MSIX only installs through developer sideloading. Real distribution needs an Apple Developer ID plus
+  notarization and a Windows signing certificate (Hermes uses Azure Trusted Signing); the MSIX publisher
+  subject must then match the certificate.
+- **CLI links.** The packaged app links its CLI into `~/.local/bin` on first start (even with an isolated
+  `HERMES_HOME`); ReAgent's are named after its CLI (`reagent-<sha7>` for commit builds, `reagent` for the
+  final identity), so they never replace a Hermes `hermes`.
+- **No updates.** There is no ReAgent update feed: a new version is a reinstall.
+- Windows has no `.exe` or `.msi`: Hermes packages Windows as MSIX only.
+
 ## Rules that keep upstream syncs cheap
 
 - **Allowlist, never denylist.** A page, settings group, palette jump or plugin upstream

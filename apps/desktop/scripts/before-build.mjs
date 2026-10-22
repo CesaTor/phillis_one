@@ -24,7 +24,8 @@ const {
   store,
   displayName,
   appNamePascal,
-  artifactNamePascal
+  artifactNamePascal,
+  packaging
 } = require('../product-identity.cjs')
 
 export default async function beforeBuild() {
@@ -40,7 +41,7 @@ export default async function beforeBuild() {
 
 function stageMsixAssets() {
   const desktop = path.join(import.meta.dirname, '..')
-  const sourceDir = path.join(desktop, 'assets', 'appx')
+  const sourceDir = path.join(desktop, packaging.appxDir)
   const stageDir = path.join(desktop, 'build', 'appx')
   // Every generated logo goes in: the qualified siblings (*.scale-N,
   // *.targetsize-N_altform-*) are what make Windows draw an exact bitmap per

@@ -99,6 +99,27 @@ const identity = {
         LegalCopyright: 'Copyright (c) 2026 ReQurv'
       }
     : null,
+  // What the installers show a user: DMG window and volume icon, MSIX logos and store text. Paths are
+  // relative to apps/desktop; null `description`/`copyright` keep upstream's (package.json / default).
+  packaging: reagent
+    ? {
+        dmgTitle: 'ReAgent Installer',
+        dmgBackground: 'packaging/reagent/dmg-background.tiff',
+        dmgVolumeIcon: 'packaging/reagent/dmg-volume.icns',
+        appxDir: 'assets/reagent/appx',
+        publisherDisplayName: 'ReQurv',
+        description: 'ReAgent by ReQurv: a personal AI agent that runs on your own machine.',
+        copyright: 'Copyright (c) 2026 ReQurv'
+      }
+    : {
+        dmgTitle: 'Hermes Agent Installer',
+        dmgBackground: 'packaging/nous-dmg-2b.tiff',
+        dmgVolumeIcon: 'packaging/dmg-volume.icns',
+        appxDir: 'assets/appx',
+        publisherDisplayName: 'Nous Research',
+        description: null,
+        copyright: null
+      },
   // ReAgent keeps its own state (~/.reagent): it must never share config,
   // memories, sessions or the gateway with a Hermes install on the machine.
   hermesHomeName: reagent ? 'reagent' : 'hermes',
@@ -133,5 +154,5 @@ module.exports = !request
   : Object.freeze(
       officialChannel
         ? { ...identity, channel: request.channel }
-        : { ...request.identity, store: false, light: false, channel: request.channel }
+        : { ...request.identity, store: false, light: false, packaging: identity.packaging, channel: request.channel }
     )

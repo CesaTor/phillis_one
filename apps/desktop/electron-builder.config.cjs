@@ -27,7 +27,8 @@ const {
   channel,
   msixAppIdWithOrg,
   token,
-  iconDir
+  iconDir,
+  packaging
 } = require('./product-identity.cjs')
 
 // `storeMsix` is optional on the identity type but guaranteed present when
@@ -87,6 +88,7 @@ module.exports = {
   // the release pipeline can keep the two apart.
   artifactName: `${store ? 'Store-' : ''}${artifactNamePascal}-\${version}-\${os}-\${arch}.\${ext}`,
   icon: `${iconDir}/icon`,
+  ...(packaging.copyright ? { copyright: packaging.copyright } : {}),
   // The electron-updater feed. CI builds set CLOUDFLARE_R2_PUBLIC_URL (the R2
   // public bucket / custom domain) and publish there — the feed yml, blockmaps
   // and installers all live in the same flat R2 bucket, and electron-updater
@@ -103,6 +105,7 @@ module.exports = {
       ],
   extraMetadata: {
     name: appNamePascal,
+    ...(packaging.description ? { description: packaging.description } : {}),
     // Electron bootstrap reads package.productName before main.ts. Keep the
     // shipped stable default, but isolate nonstable userData from first access.
     // A stable-branded channel has no token and keeps stable's userData.
@@ -204,14 +207,14 @@ module.exports = {
     // drive-with-the-girl artwork instead (dmgbuild's badge option can only
     // paste onto the stock removable-drive icon). It lives in packaging/ with
     // the background so the `files` whitelist keeps it out of the app bundle.
-    icon: 'packaging/dmg-volume.icns',
-    title: 'Hermes Agent Installer',
+    icon: packaging.dmgVolumeIcon,
+    title: packaging.dmgTitle,
     // A prebuilt .tiff on purpose, not a PNG plus a @2x sibling: dmg-builder's
     // PNG path runs `tiffutil -cathidpicheck`, which on macOS 26 rewrites both
     // frames to 72 dpi and silently drops the 2x representation. A .tiff is
     // handed to dmgbuild untouched (dmg-builder/dist/dmgUtil.js), and living
     // outside assets/ keeps it out of the app bundle via the `files` whitelist.
-    background: 'packaging/nous-dmg-2b.tiff',
+    background: packaging.dmgBackground,
     iconSize: 96,
     iconTextSize: 11,
     window: {
@@ -250,7 +253,7 @@ module.exports = {
     applicationId: appNamePascal,
     displayName,
     publisher: store ? mustStoreMsix(storeMsixWhenStore).publisher : OUT_OF_STORE_PUBLISHER,
-    publisherDisplayName: store ? mustStoreMsix(storeMsixWhenStore).publisherDisplayName : 'Nous Research',
+    publisherDisplayName: store ? mustStoreMsix(storeMsixWhenStore).publisherDisplayName : packaging.publisherDisplayName,
     // The native quad is the build time (scripts/msix-shared.mjs::nativeQuad),
     // baked into the manifest template, so the builder's own build-number
     // override would stamp a second, conflicting version.
