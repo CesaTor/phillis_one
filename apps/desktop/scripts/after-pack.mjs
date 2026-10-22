@@ -19,6 +19,7 @@ import { runPython } from '../../../scripts/build/python.mjs'
 
 import { assertPackagedBackendReadyArtifact, resolvePackagedAsarPath } from './backend-ready-artifact.mjs'
 import { batchSignAppTree } from './batch-sign-binaries.mjs'
+import { restoreMacHelperNames } from './after-pack-helper-names.mjs'
 import { rehashPayloadDigests } from './payload-digests.mjs'
 import { resolveSigningIdentity, signNestedChromium } from './sign-nested-chromium.mjs'
 import { signWheelZipMembers } from './sign-wheel-zips.mjs'
@@ -82,6 +83,7 @@ export default async function afterPack(context) {
   if (platform === 'darwin') {
     await restoreLegacyMacIcon(context)
     await restoreMacLocaleMarkers(context)
+    restoreMacHelperNames(context)
     if (fs.existsSync(payload)) {
       const entitlements = path.join(import.meta.dirname, '..', 'electron', 'entitlements.mac.inherit.plist')
       const { identity, keychain } = await resolveSigningIdentity(context.packager)
