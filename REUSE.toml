@@ -9,6 +9,7 @@ SPDX-PackageDownloadLocation = "https://github.com/CesaTor/phillis_one"
 [[annotations]]
 path = [
   "REAGENT.md",
+  ".github/workflows/reagent-build.yml",
   "LICENSING.md",
   "apps/desktop/src/distribution/**",
   "apps/desktop/assets/reagent/**",

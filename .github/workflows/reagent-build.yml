@@ -1,0 +1,402 @@
+name: ReAgent build
+
+# Builds ReAgent's UNSIGNED installers on GitHub-hosted runners. No cloud storage,
+# no signing secrets: the only credential is the workflow's own read-only token.
+#
+#   macOS arm64  (macos-15)        ReAgent-<version>-mac-arm64.dmg and .zip
+#   macOS x64    (macos-15-intel)  ReAgent-<version>-mac-x64.dmg and .zip
+#   Windows x64  (windows-2025)    sideload MSIX
+#
+# Each leg runs the same script a developer runs locally (scripts/build-bundle.sh,
+# scripts/build-bundle.ps1), which packages HEAD of a clean checkout. Artifacts are
+# kept for 14 days under the run's "Artifacts" section.
+#
+# Unsigned, on purpose:
+#   - macOS: Gatekeeper blocks the app on first launch. Right-click the app and
+#     choose Open, or run: xattr -dr com.apple.quarantine /Applications/ReAgent*.app
+#   - Windows: an unsigned MSIX installs only with developer sideloading turned on
+#     (Settings > System > For developers) and a package signed or trusted by you.
+#
+# Commit builds are not the final product identity. The driver names a build of a
+# bare commit "ReAgent <sha7>" (apps/desktop/product-identity.cjs: buildCommit):
+# its own app id, MSIX family and CLI name, so it installs side by side with
+# ReAgent and with other commit builds, and it has no update feed.
+#
+# Trigger:
+#   git tag reagent-build-N && git push origin reagent-build-N
+# or Actions > ReAgent build > Run workflow (optional ref: branch, tag or full SHA;
+# empty builds the branch the run was started from).
+#
+# Pushing a reagent-build-* tag starts only this workflow: the one inherited
+# workflow that listens to tag pushes (live-providers.yml) matches v*.
+
+on:
+  push:
+    tags:
+      - 'reagent-build-*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or full SHA to build (empty = the ref this run was started from)
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+# One run per ref at a time. A queued run waits; a running build is never cancelled.
+concurrency:
+  group: reagent-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  macos:
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x64
+            runner: macos-15-intel
+    env:
+      HERMES_DISTRIBUTION: reagent
+    steps:
+      - name: Disk at start
+        shell: bash
+        run: df -h / "$HOME"
+
+      # Spotlight indexes the freshly mounted DMG staging image past hdiutil's
+      # detach retries (upstream's release jobs switch it off for the same reason).
+      - name: Disable Spotlight indexing for DMG staging
+        shell: bash
+        run: sudo mdutil -a -i off || true
+
+      # electron-builder compiles apps/desktop/assets/icon.icon with actool, which
+      # only Xcode >= 26 ships. Without it the build silently packages the .icns
+      # alone, so fail now instead of after the multi-hour build.
+      - name: Select Xcode 26
+        shell: bash
+        run: |
+          xcode="$(printf '%s\n' /Applications/Xcode_26*.app | sort -V | tail -1)"
+          if [ ! -d "$xcode" ]; then
+            echo "::error::no Xcode 26 on this runner image; the macOS 26 layered icon cannot be compiled"
+            printf '%s\n' /Applications/Xcode*.app
+            exit 1
+          fi
+          export DEVELOPER_DIR="$xcode/Contents/Developer"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          sudo xcode-select -s "$DEVELOPER_DIR"
+          version="$(actool --version | python3 -c 'import plistlib, sys; print(plistlib.loads(sys.stdin.buffer.read())["com.apple.actool.version"]["short-bundle-version"])')"
+          echo "actool $version from $xcode"
+          case "$version" in
+            2[6-9].*|[3-9][0-9].*) ;;
+            *) echo "::error::actool $version cannot compile .icon packages (need >= 26)"; exit 1 ;;
+          esac
+          echo "XCODE_KEEP=$(cd "$xcode" && pwd -P)" >> "$GITHUB_ENV"
+
+      # The bundled payload, its dependency environments and the DMG staging image
+      # are large. Only when the volume is tight, drop what this build never uses:
+      # the Xcode versions other than the one selected above, simulator devices and
+      # runtimes, and the Android SDK. Best effort: a failure here never fails the job.
+      - name: Free disk space
+        continue-on-error: true
+        timeout-minutes: 30
+        shell: bash
+        run: |
+          avail_gb="$(df -k "$HOME" | awk 'NR==2 {print int($4 / 1048576)}')"
+          echo "available: ${avail_gb} GiB"
+          if [ "$avail_gb" -ge 50 ]; then
+            echo "enough space, nothing to remove"
+            exit 0
+          fi
+          for app in /Applications/Xcode*.app; do
+            [ -e "$app" ] || continue
+            if [ "$(cd "$app" && pwd -P)" != "$XCODE_KEEP" ]; then
+              echo "removing $app"
+              sudo rm -rf "$app" || true
+            fi
+          done
+          xcrun simctl delete all >/dev/null 2>&1 || true
+          sudo xcrun simctl runtime delete all >/dev/null 2>&1 || true
+          rm -rf "$HOME/Library/Android" "${ANDROID_HOME:-}" 2>/dev/null || true
+          df -h "$HOME"
+
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      # The driver needs a host Python 3.11+ only to bootstrap; PM installs the pinned one.
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Build and package (unsigned)
+        shell: bash
+        timeout-minutes: 340
+        run: |
+          log_dir="$RUNNER_TEMP/reagent-logs"
+          mkdir -p "$log_dir"
+          ulimit -n 16384 2>/dev/null || true
+          echo "file descriptor limit: soft=$(ulimit -Sn) hard=$(ulimit -Hn)"
+          scripts/build-bundle.sh 2>&1 | tee "$log_dir/build.log"
+
+      - name: List the packages
+        if: always()
+        shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          shopt -s nullglob
+          {
+            echo "### macOS $ARCH packages"
+            echo
+            echo "| File | Size |"
+            echo "| --- | --- |"
+            if [ -d apps/desktop/release ]; then
+              for f in apps/desktop/release/*.dmg apps/desktop/release/*.zip apps/desktop/release/*.blockmap apps/desktop/release/*.yml; do
+                awk -v n="$(basename "$f")" -v s="$(stat -f%z "$f")" 'BEGIN { printf "| %s | %.1f MiB |\n", n, s / 1048576 }'
+              done
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Disk at end
+        if: always()
+        shell: bash
+        run: df -h / "$HOME"
+
+      - name: Upload packages
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reagent-macos-${{ matrix.arch }}
+          path: |
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.zip
+            apps/desktop/release/*.blockmap
+            apps/desktop/release/*.yml
+          retention-days: 14
+          if-no-files-found: error
+          compression-level: 0
+
+      # The driver writes no log files: its output is the console, which the build
+      # step tees into build.log. The rest is what a failed run leaves behind.
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reagent-macos-${{ matrix.arch }}-logs
+          path: |
+            ${{ runner.temp }}/reagent-logs/*.log
+            .build/desktop-job/*.json
+            .build/desktop-job/home/.npm/_logs/*.log
+            .cache/desktop-inputs/npm/_logs/*.log
+            apps/desktop/release/builder-debug.yml
+            apps/desktop/release/builder-effective-config.yaml
+          retention-days: 14
+          if-no-files-found: warn
+
+  windows:
+    name: Windows x64
+    runs-on: windows-2025
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    env:
+      HERMES_DISTRIBUTION: reagent
+      # BUILDING.md: build in a short path. C:\hsb is also on the larger system
+      # drive, where the workspace's own D: drive may have only a few GB free.
+      SRC: C:\hsb
+      LOG_DIR: C:\hsb-logs
+    steps:
+      - name: Disk at start
+        shell: pwsh
+        run: Get-PSDrive -PSProvider FileSystem | Format-Table Name, @{n='UsedGB';e={[math]::Round($_.Used/1GB,1)}}, @{n='FreeGB';e={[math]::Round($_.Free/1GB,1)}} -AutoSize
+
+      - name: Exclude build write paths from Defender scanning
+        shell: powershell
+        run: |
+          $paths = @($env:SRC, $env:LOG_DIR, $env:RUNNER_TEMP, $env:TEMP, (npm config get cache))
+          foreach ($p in $paths) {
+            try {
+              Add-MpPreference -ExclusionPath $p
+              Write-Host "Defender exclusion added for $p"
+            } catch {
+              Write-Host "Defender exclusion not applied for $p ($($_.Exception.Message)) - continuing"
+            }
+          }
+          try {
+            Set-MpPreference -DisableRealtimeMonitoring $true
+          } catch {
+            Write-Host "Could not disable Windows Defender real-time monitoring"
+          }
+
+      # Only when the system drive is tight, drop what this build never uses (the
+      # Android SDKs). Best effort: a failure here never fails the job.
+      - name: Free disk space
+        continue-on-error: true
+        timeout-minutes: 30
+        shell: pwsh
+        run: |
+          $freeGB = (Get-PSDrive C).Free / 1GB
+          Write-Host ("C: free {0:N1} GiB" -f $freeGB)
+          if ($freeGB -ge 40) { Write-Host 'enough space, nothing to remove'; exit 0 }
+          foreach ($p in 'C:\Android', 'C:\Program Files (x86)\Android', 'C:\Program Files\Android') {
+            if (Test-Path -LiteralPath $p) {
+              Write-Host "removing $p"
+              Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction SilentlyContinue
+            }
+          }
+          Write-Host ("C: free {0:N1} GiB" -f ((Get-PSDrive C).Free / 1GB))
+
+      # The driver needs a host Python 3.11+ only to bootstrap; PM installs the pinned one.
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      # A shallow fetch of the requested revision into the short path. This is the
+      # token-authenticated equivalent of actions/checkout (which can only check out
+      # under the workspace) and leaves no credential in the repository config.
+      - name: Check out the source at C:\hsb
+        shell: pwsh
+        env:
+          INPUT_REF: ${{ inputs.ref }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          function Invoke-Git {
+            & git @args
+            if ($LASTEXITCODE -ne 0) { throw "git $($args -join ' ') failed ($LASTEXITCODE)" }
+          }
+          $ref = if ($env:INPUT_REF) { $env:INPUT_REF } else { $env:GITHUB_SHA }
+          $auth = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("x-access-token:$($env:GH_TOKEN)"))
+          Invoke-Git init --quiet $env:SRC
+          Set-Location $env:SRC
+          Invoke-Git config core.longpaths true
+          Invoke-Git remote add origin "$($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY)"
+          Invoke-Git -c "http.$($env:GITHUB_SERVER_URL)/.extraheader=AUTHORIZATION: basic $auth" fetch --no-tags --depth 1 origin $ref
+          Invoke-Git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          Write-Host "building $(git rev-parse HEAD)"
+
+      - name: Toolchain on this image
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          python --version
+          git --version
+          node --version
+          rustc --version
+          cargo --version
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+
+      # build-bundle.ps1 packages HEAD of a clean checkout, removes AZURE_SIGN_* from
+      # the build and produces the unsigned sideload MSIX. Its output is teed into a
+      # log kept outside the checkout (the driver refuses a dirty tree).
+      - name: Build and package (unsigned)
+        shell: pwsh
+        timeout-minutes: 340
+        working-directory: C:\hsb
+        run: |
+          $ErrorActionPreference = 'Continue'
+          New-Item -ItemType Directory -Force -Path $env:LOG_DIR | Out-Null
+          $global:LASTEXITCODE = 0
+          & .\scripts\build-bundle.ps1 *>&1 | Tee-Object -FilePath (Join-Path $env:LOG_DIR 'build.log')
+          exit $LASTEXITCODE
+
+      - name: List the packages
+        if: always()
+        shell: pwsh
+        run: |
+          $release = Join-Path $env:SRC 'apps\desktop\release'
+          $lines = @('### Windows x64 packages', '', '| File | Size |', '| --- | --- |')
+          if (Test-Path -LiteralPath $release) {
+            $lines += Get-ChildItem -LiteralPath $release -File |
+              Where-Object { $_.Extension -in '.msix', '.blockmap', '.yml', '.appinstaller' } |
+              ForEach-Object { '| {0} | {1:N1} MiB |' -f $_.Name, ($_.Length / 1MB) }
+          }
+          $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+      - name: Disk at end
+        if: always()
+        shell: pwsh
+        run: Get-PSDrive -PSProvider FileSystem | Format-Table Name, @{n='UsedGB';e={[math]::Round($_.Used/1GB,1)}}, @{n='FreeGB';e={[math]::Round($_.Free/1GB,1)}} -AutoSize
+
+      - name: Upload packages
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reagent-windows-x64
+          path: |
+            C:/hsb/apps/desktop/release/*.msix
+            C:/hsb/apps/desktop/release/*.appinstaller
+            C:/hsb/apps/desktop/release/*.blockmap
+            C:/hsb/apps/desktop/release/*.yml
+          retention-days: 14
+          if-no-files-found: error
+          compression-level: 0
+
+      # The driver writes no log files: its output is the console, which the build
+      # step tees into build.log. The rest is what a failed run leaves behind.
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reagent-windows-x64-logs
+          path: |
+            C:/hsb-logs/*.log
+            C:/hsb/.build/desktop-job/*.json
+            C:/hsb/.build/desktop-job/home/.npm/_logs/*.log
+            C:/hsb/.cache/desktop-inputs/npm/_logs/*.log
+            C:/hsb/apps/desktop/release/builder-debug.yml
+            C:/hsb/apps/desktop/release/builder-effective-config.yaml
+          retention-days: 14
+          if-no-files-found: warn
+
+  summary:
+    name: Summary
+    runs-on: ubuntu-latest
+    needs: [macos, windows]
+    if: always()
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Write the run summary
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RESULT_MACOS: ${{ needs.macos.result }}
+          RESULT_WINDOWS: ${{ needs.windows.result }}
+        run: |
+          {
+            echo "## ReAgent build"
+            echo
+            echo "Unsigned installers, kept 14 days: [run page]($RUN_URL). macOS: right-click Open, or \`xattr -dr com.apple.quarantine\`. Windows: needs developer sideloading."
+            echo
+            echo "| Platform | Result |"
+            echo "| --- | --- |"
+            if ! gh api --paginate "repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100" \
+                 --jq '.jobs[] | select(.name != "Summary") | "| \(.name) | \(.conclusion // .status) |"'; then
+              echo "| macOS (all legs) | $RESULT_MACOS |"
+              echo "| Windows x64 | $RESULT_WINDOWS |"
+            fi
+            echo
+            echo "| Artifact | Size |"
+            echo "| --- | --- |"
+            gh api --paginate "repos/$REPO/actions/runs/$RUN_ID/artifacts?per_page=100" \
+              --jq '.artifacts | sort_by(.name)[] | "\(.name)\t\(.size_in_bytes)"' |
+              awk -F'\t' '{ printf "| %s | %.1f MiB |\n", $1, $2 / 1048576 }' || echo "| (artifact list unavailable) | |"
+            echo
+            echo "Per-file names and sizes are in each build job's summary. The \`-logs\` artifacts hold the console log of the build."
+          } >> "$GITHUB_STEP_SUMMARY"
