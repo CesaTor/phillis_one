@@ -12,7 +12,7 @@ import { userLauncherInstallRoot } from './updater-process'
 
 const UPSTREAM_HOME_NAME = 'hermes'
 
-type HomeIdentity = Pick<ProductIdentity, 'hermesHomeName'>
+type HomeIdentity = Pick<ProductIdentity, 'distribution' | 'hermesHomeName'>
 
 function ownsSeparateHome(identity: HomeIdentity): boolean {
   return (identity.hermesHomeName ?? UPSTREAM_HOME_NAME) !== UPSTREAM_HOME_NAME
@@ -31,7 +31,9 @@ export function resolveProductHermesHome(
  * so every child (backend, gateway, `--version` probes, installer, terminals)
  * resolves the same home even where a spawn site passes no HERMES_HOME: a
  * Hermes CLI without it falls back to ~/.hermes. Upstream leaves the
- * environment untouched.
+ * environment untouched. A distribution also exports its id as
+ * HERMES_DISTRIBUTION (even when HERMES_HOME was given explicitly), so the
+ * backend speaks as that product rather than as Hermes.
  */
 export function claimProductHermesHome(
   options: Omit<HermesHomeOptions, 'homeName'>,
@@ -42,6 +44,10 @@ export function claimProductHermesHome(
 
   if (ownsSeparateHome(identity) && !env.HERMES_HOME) {
     env.HERMES_HOME = home
+  }
+
+  if (identity.distribution) {
+    env.HERMES_DISTRIBUTION = identity.distribution
   }
 
   return home

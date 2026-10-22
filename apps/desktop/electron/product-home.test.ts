@@ -8,7 +8,7 @@ import { afterEach, test, vi } from 'vitest'
 import { claimProductHermesHome, productUserLauncherInstall, resolveProductHermesHome } from './product-home'
 import { resolveSourceInstallationBackend } from './source-backend'
 
-const REAGENT = { hermesHomeName: 'reagent' }
+const REAGENT = { hermesHomeName: 'reagent', distribution: 'reagent' }
 const UPSTREAM = { hermesHomeName: 'hermes' }
 
 afterEach((): void => {
@@ -80,6 +80,20 @@ test('ReAgent exports its home to children; upstream leaves the environment alon
     '/home/test/.hermes'
   )
   assert.equal('HERMES_HOME' in upstreamEnv, false)
+})
+
+test('ReAgent exports HERMES_DISTRIBUTION to children, with or without an explicit home; upstream does not', (): void => {
+  const implicit: NodeJS.ProcessEnv = {}
+  const explicit: NodeJS.ProcessEnv = { HERMES_HOME: '/sandbox/hermes-home' }
+  const upstream: NodeJS.ProcessEnv = {}
+
+  claimProductHermesHome({ home: '/home/test', env: implicit, platform: 'linux' }, REAGENT)
+  claimProductHermesHome({ home: '/home/test', env: explicit, platform: 'linux' }, REAGENT)
+  claimProductHermesHome({ home: '/home/test', env: upstream, platform: 'linux' }, UPSTREAM)
+
+  assert.equal(implicit.HERMES_DISTRIBUTION, 'reagent')
+  assert.equal(explicit.HERMES_DISTRIBUTION, 'reagent')
+  assert.equal('HERMES_DISTRIBUTION' in upstream, false)
 })
 
 // A machine with Hermes installed the usual way: ~/.hermes/hermes-agent with

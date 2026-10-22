@@ -99,7 +99,7 @@ class _ReQurvHiveProfile(ProviderProfile):
             with open_credentialed_url(req, timeout=timeout) as resp:
                 data = json.loads(resp.read().decode())
             rows = data if isinstance(data, list) else data.get("data", [])
-        except Exception as exc:
+        except (OSError, ValueError, AttributeError) as exc:
             logger.debug("fetch_models(%s): %s", self.name, exc)
             return None
         return chat_catalog_ids([row for row in rows if _is_chat_row(row)])

@@ -25,6 +25,7 @@ from agent.prompt_builder import (
     SKILLS_GUIDANCE, STEER_CHANNEL_NOTE, TASK_COMPLETION_GUIDANCE, TELEGRAM_RICH_MESSAGES_HINT,
     TOOL_USE_ENFORCEMENT_GUIDANCE, TOOL_USE_ENFORCEMENT_MODELS, drain_truncation_warnings,
 )
+from agent import distribution_identity as _dist
 from agent import prompt_builder as _pb
 from agent.runtime_cwd import resolve_agent_cwd, resolve_context_cwd
 from hermes_constants import get_default_hermes_root, get_hermes_home
@@ -553,7 +554,7 @@ def _identity_parts(agent: Any, ctx_len: Optional[int]) -> tuple[list[str], bool
     Returns ``(parts, soul_loaded)``."""
     wants_soul = agent.load_soul_identity or not agent.skip_context_files
     _soul_content = _pb.load_soul_md(ctx_len, home_override=_agent_home(agent)) if wants_soul else None
-    return ([_soul_content], True) if _soul_content else ([DEFAULT_AGENT_IDENTITY], False)
+    return ([_soul_content], True) if _soul_content else ([_dist.agent_identity(DEFAULT_AGENT_IDENTITY)], False)
 
 
 def _guidance_parts(agent: Any) -> list[str]:
@@ -750,13 +751,13 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None) 
     # hermes-agent skill installed, so the variant is chosen after the skills
     # index is built; this slot holds its position.
     _help_guidance_slot = len(stable_parts)
-    stable_parts.append(HERMES_AGENT_HELP_GUIDANCE_NO_SKILLS)
+    stable_parts.append(_dist.help_guidance(HERMES_AGENT_HELP_GUIDANCE_NO_SKILLS, skills=False))
     stable_parts.extend(_guidance_parts(agent))
     skills_prompt = _skills_prompt(agent)
     # Skill-pointer variant requires BOTH skill_view AND the hermes-agent skill
     # in the rendered index (pure string check — inherits the index's stability).
     if "skill_view" in (agent.valid_tool_names or set()) and "- hermes-agent:" in skills_prompt:
-        stable_parts[_help_guidance_slot] = HERMES_AGENT_HELP_GUIDANCE
+        stable_parts[_help_guidance_slot] = _dist.help_guidance(HERMES_AGENT_HELP_GUIDANCE, skills=True)
     stable_parts.extend(_alibaba_identity_part(agent))
     # Pinned skills are per-agent constants (resolved once), so they live in the stable prefix.
     stable_parts.extend(_auto_load_parts(agent))

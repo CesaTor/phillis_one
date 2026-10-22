@@ -123,6 +123,8 @@ const identity = {
   // ReAgent keeps its own state (~/.reagent): it must never share config,
   // memories, sessions or the gateway with a Hermes install on the machine.
   hermesHomeName: reagent ? 'reagent' : 'hermes',
+  // Exported as HERMES_DISTRIBUTION to every child the app spawns, so the backend speaks as this product.
+  distribution: reagent ? 'reagent' : null,
   ...(store
     ? {
         storeMsix: {

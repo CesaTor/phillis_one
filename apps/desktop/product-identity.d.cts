@@ -34,6 +34,9 @@ interface ProductIdentity {
   /** Default Hermes home: `~/.<name>` (macOS/Linux), `%LOCALAPPDATA%\<name>` (Windows). "hermes"
    *  upstream, a distribution's own otherwise. Absent on channel-build identities (= "hermes"). */
   readonly hermesHomeName?: string
+  /** Distribution id ("reagent"), exported to children as HERMES_DISTRIBUTION; null for upstream Hermes.
+   *  Absent on channel-build identities. */
+  readonly distribution?: string | null
   /** R2 identity token on channel builds; absent on legacy products. */
   readonly token?: string
   /** Channel subscription for channel builds; legacy electron-updater label otherwise. Stable tags:

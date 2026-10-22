@@ -81,8 +81,11 @@ gh run download <run-id> -R CesaTor/phillis_one -D out          # all artifacts 
 | Windows x64 | `ReAgent-<v>-win-x64.msix` | about 50 min |
 
 - **Identity.** A commit build is named `ReAgent <sha7>`, id `ai.requrv.reagent-<sha7>`, version `0.0.0`,
-  and installs beside other builds. The clean identity needs a version-tag build (`desktop.py --tag
-  vX.Y.Z`, the tag must match `pyproject.toml`); not wired up here yet.
+  and installs beside other builds. A **release build** is plain `ReAgent` (id `ai.requrv.reagent`, the
+  tag's version, MSIX `ReQurv.ReAgent`) and replaces any other plain-ReAgent install:
+  `git tag reagent-v0.1.0 && git push origin reagent-v0.1.0`, or run the workflow with `release_tag = v0.1.0`.
+  It goes through `build-bundle --tag vX.Y.Z` (a local claim tag, deleted on exit; nothing is pushed), needs
+  no match with `pyproject.toml`'s version and still has no update feed.
 - **Unsigned.** macOS: right-click Open, or `xattr -dr com.apple.quarantine <app>`. Windows: an unsigned
   MSIX only installs through developer sideloading. Real distribution needs an Apple Developer ID plus
   notarization and a Windows signing certificate (Hermes uses Azure Trusted Signing); the MSIX publisher
@@ -149,9 +152,12 @@ statusbar item appeared.
   so the bundled payload no longer installs them (`pillow-heif` still needs a decision).
   LGPL-3.0 (`python-telegram-bot`, `edge-tts`) and MPL-2.0 (noVNC, certifi, ...) need their
   notices kept and the libraries replaceable. Have legal review these.
-- Backend prompt copy still names Hermes: every session carries upstream's help guidance
-  ("You run on Hermes Agent (by Nous Research)", agent/prompt_builder.py), and bot profiles
-  created later start from upstream's default SOUL. Only the default bot's SOUL is seeded.
+- Backend prompt copy: the desktop exports `HERMES_DISTRIBUTION=reagent` to every child it spawns and
+  `agent/distribution_identity.py` swaps the identity opening and the self-help guidance ("You run on
+  ReAgent ... powered by ReQurv Hive"); unset, the prompt is upstream's, byte for byte. Still upstream's:
+  bot profiles created later start from upstream's default SOUL (only the default bot's is seeded), the
+  Codex fallbacks in `agent/codex_responses_adapter.py` and `agent/transports/codex.py`, and other
+  "Hermes" mentions in the prompt (e.g. "Active Hermes profile").
 - `seed-soul.ts` recognises an untouched persona by upstream's exact default text
   (hermes_cli/default_soul.py). If an upstream sync rewords it, copy the new text into
   `UPSTREAM_DEFAULT_SOUL` or the seed silently stops renaming the default bot.
