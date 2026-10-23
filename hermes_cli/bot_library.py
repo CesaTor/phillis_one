@@ -19,10 +19,12 @@ import threading
 from pathlib import Path
 from typing import Any, Optional
 
+from hermes_cli.bot_library_credentials import seed_provider_setup
+from hermes_cli.bot_library_messages import FILES_NOT_DOWNLOADED, FOLDER_UNAVAILABLE, plain_message
 from hermes_cli.profile_distribution import (
-    DistributionError, MANIFEST_FILENAME, DistributionManifest, _existing_profile, _git_clone,
-    _git_subdir, _has_cron_jobs, _looks_like_git_url, install_distribution, read_manifest,
-    update_distribution)
+    DistributionError, MANIFEST_FILENAME, DistributionManifest, ManifestMissingError, SourceNotFoundError,
+    _existing_profile, _git_clone, _git_subdir, _has_cron_jobs, _looks_like_git_url, install_distribution,
+    read_manifest, update_distribution)
 
 # install / update / sync / rollback rewrite profile trees and a ledger: one at a time.
 _MUTATION_LOCK = threading.RLock()
@@ -46,12 +48,8 @@ def assert_materialized(path: Path) -> None:
     """Raise :class:`CloudPlaceholderError` when *path* (a file or folder tree) holds online-only files."""
     from hermes_platform.host.cloud_files import find_online_only
 
-    found = find_online_only(path)
-    if found:
-        names = ", ".join(str(p.relative_to(path)) if p != path else p.name for p in found)
-        raise CloudPlaceholderError(
-            f"Some files are not downloaded yet ({names}). In your Drive/Nextcloud client set the "
-            "folder to 'available offline' / 'mirror files', wait for the sync, then try again.")
+    if find_online_only(path):
+        raise CloudPlaceholderError(FILES_NOT_DOWNLOADED)
 
 
 def _guard_source(source: str) -> None:
@@ -119,7 +117,7 @@ def _describe_entry(entry_dir: Path, source: str, installed) -> dict[str, Any]:
     assert_materialized(entry_dir)
     manifest = read_manifest(entry_dir)
     if manifest is None:
-        raise DistributionError(f"No {MANIFEST_FILENAME} in {entry_dir.name}")
+        raise ManifestMissingError(f"No {MANIFEST_FILENAME} in {entry_dir.name}")
     match = _installed_match(source, manifest.name, installed)
     status = "new" if match is None else ("installed" if match[1].version == manifest.version else "update")
     return {
@@ -139,7 +137,7 @@ def _scan_entry(entry_dir: Path, source: str, installed) -> dict[str, Any]:
     except Exception as exc:  # health: allow BLE001 -- one malformed entry must not fail the whole scan; the message is surfaced as its error
         return {"name": entry_dir.name, "version": "", "description": "", "author": "", "source": source,
                 "env_requires": [], "skills": [], "has_cron": False, "status": "error",
-                "installed_profile": None, "installed_version": None, "error": str(exc)}
+                "installed_profile": None, "installed_version": None, "error": plain_message(exc)}
 
 
 def _library_root(source: str, workdir: Path) -> tuple[Path, Any]:
@@ -152,7 +150,7 @@ def _library_root(source: str, workdir: Path) -> tuple[Path, Any]:
         return root, lambda name: f"{url}#{prefix}{name}"
     root = Path(source).expanduser()
     if not root.is_dir():
-        raise DistributionError(f"Cannot find the bot library folder {source!r}.")
+        raise SourceNotFoundError(f"Cannot find the bot library folder {source!r}.")
     root = root.resolve()
     return root, lambda name: str(root / name)
 
@@ -162,8 +160,12 @@ def scan_library(source: str) -> list[dict[str, Any]]:
     with tempfile.TemporaryDirectory(prefix="hermes_bot_library_") as tmp:
         root, entry_source = _library_root(source, Path(tmp))
         installed = _installed_distributions()
+        try:
+            folders = sorted(root.iterdir())
+        except OSError as exc:  # permissions, or the drive went away between the check and the listing
+            raise SourceNotFoundError(f"Cannot read the bot library folder {source!r}: {exc}") from exc
         return [
-            _scan_entry(d, entry_source(d.name), installed) for d in sorted(root.iterdir())
+            _scan_entry(d, entry_source(d.name), installed) for d in folders
             if d.is_dir() and not d.name.startswith(".") and (d / MANIFEST_FILENAME).exists()
         ]
 
@@ -175,6 +177,7 @@ def install_entry(source: str, name: Optional[str] = None) -> dict[str, Any]:
     with _MUTATION_LOCK:
         _guard_source(source)
         plan = install_distribution(source, name=name)
+        seed_provider_setup(plan.target_dir)  # ReAgent: the bot runs on the user's provider, like a new bot
     return {"profile": plan.manifest.name, "version": plan.manifest.version, "from_version": None}
 
 
@@ -212,19 +215,19 @@ def _offered_version(source: str, workdir: Path, clones: dict[str, Any]) -> str:
             except DistributionError as exc:
                 clones[url] = exc
         if isinstance(clones[url], Exception):
-            raise SourceUnavailable(str(clones[url]))
+            raise SourceUnavailable(plain_message(clones[url]))
         staged = _git_subdir(clones[url], subdir)
     else:
         staged = Path(source).expanduser()
         if not staged.is_dir():
-            raise SourceUnavailable(f"The source folder {source} is not available.")
+            raise SourceUnavailable(FOLDER_UNAVAILABLE)
         try:
             assert_materialized(staged / MANIFEST_FILENAME)
         except CloudPlaceholderError as exc:
             raise SourceUnavailable(str(exc)) from exc
     manifest = read_manifest(staged)
     if manifest is None:
-        raise DistributionError(f"The source no longer offers a {MANIFEST_FILENAME}.")
+        raise ManifestMissingError(f"The source no longer offers a {MANIFEST_FILENAME}.")
     return manifest.version
 
 
@@ -244,7 +247,7 @@ def _sync_one(profile: str, profile_dir: Path, manifest: DistributionManifest, w
     except (SourceUnavailable, CloudPlaceholderError) as exc:
         result.update(status="source-unavailable", error=str(exc))
     except Exception as exc:  # health: allow BLE001 -- sync reports per-profile failures in its result, never raises
-        result.update(status="error", error=str(exc))
+        result.update(status="error", error=plain_message(exc))
     return result
 
 

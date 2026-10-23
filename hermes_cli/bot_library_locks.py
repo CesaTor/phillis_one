@@ -144,11 +144,14 @@ def library_write_refusal(paths: Iterable[str], task_id: str = "default") -> Opt
 
 # --- skills -------------------------------------------------------------------------------------
 
-def library_skill_refusal(action: str, name: str, operations: Any = None) -> Optional[str]:
+def library_skill_refusal(
+    action: str, name: str, operations: Any = None, category: Optional[str] = None
+) -> Optional[str]:
     """Refusal for a ``skill_manage`` call (flat or batch) that edits a skill the library ships.
 
-    ``create`` is never refused here: a new skill is not in the ledger, and a name that collides with a
-    shipped skill is already rejected as existing."""
+    ``create`` is refused only when its ``category`` is a shipped skill: a new skill is not in the ledger
+    and a name that collides with a shipped skill is already rejected as existing, but a category that
+    names a shipped skill would put the new one inside a directory the update replaces."""
     if not distribution_active():
         return None
     from hermes_constants import get_hermes_home
@@ -157,11 +160,16 @@ def library_skill_refusal(action: str, name: str, operations: Any = None) -> Opt
     home = get_hermes_home()
     if _ledger(home) is None:
         return None
-    ops = operations if isinstance(operations, list) else [{"action": action, "name": name}]
+    ops = operations if isinstance(operations, list) else [{"action": action, "name": name, "category": category}]
     for op in ops:
         op = op if isinstance(op, dict) else {}
         skill = op.get("name") or name
-        if (op.get("action") or action) == "create" or not skill:
+        if (op.get("action") or action) == "create":
+            inside = str(op.get("category") or category or "").strip()
+            if inside and skill and library_owned(home, f"skills/{inside}/{skill}"):
+                return refusal_message(home, "skill")
+            continue
+        if not skill:
             continue
         found = smt._find_skill(skill)
         if found is None:
@@ -170,6 +178,16 @@ def library_skill_refusal(action: str, name: str, operations: Any = None) -> Opt
             if library_owned(home, Path(found["path"]).resolve().relative_to(home.resolve()).as_posix()):
                 return refusal_message(home, "skill")
     return None
+
+
+def library_skill_install_refusal(rel_dir: str) -> Optional[str]:
+    """Refusal for a hub install that would replace a shipped skill (*rel_dir* is relative to ``skills/``)."""
+    if not distribution_active():
+        return None
+    from hermes_constants import get_hermes_home
+
+    home = get_hermes_home()
+    return refusal_message(home, "skill") if library_owned(home, f"skills/{rel_dir}") else None
 
 
 # --- config.yaml --------------------------------------------------------------------------------

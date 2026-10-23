@@ -12,6 +12,7 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 
+from hermes_cli.bot_library_locks import library_skill_refusal, refuse_http
 from hermes_cli.web_deps import late
 from hermes_cli.web_server_profiles import _hub_action_name, _installed_hub_identifiers
 from hermes_cli.web_models import (
@@ -422,8 +423,11 @@ async def create_skill(body: SkillCreate, profile: Optional[str] = None):
     Profile from the body or ``?profile=``, like the rest of ``/api/skills``."""
     from tools.skill_manager_tool import _create_skill
 
-    result = await scoped_to_thread(
-        body.profile or profile, lambda: _create_skill(body.name, body.content, body.category or None))
+    def _create():
+        refuse_http(library_skill_refusal("create", body.name, category=body.category))  # ReAgent library bots
+        return _create_skill(body.name, body.content, body.category or None)
+
+    result = await scoped_to_thread(body.profile or profile, _create)
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("error", "Failed to create skill."))
     _clear_skills_prompt_cache()
@@ -435,7 +439,11 @@ async def update_skill_content(body: SkillContentUpdate, profile: Optional[str] 
     """Replace the SKILL.md of an existing skill (full rewrite) from the editor."""
     from tools.skill_manager_tool import _edit_skill
 
-    result = await scoped_to_thread(body.profile or profile, lambda: _edit_skill(body.name, body.content))
+    def _edit():
+        refuse_http(library_skill_refusal("edit", body.name))  # ReAgent library bots: replaced on update
+        return _edit_skill(body.name, body.content)
+
+    result = await scoped_to_thread(body.profile or profile, _edit)
     if not result.get("success"):
         err = result.get("error", "Failed to update skill.")
         status = 404 if "not found" in str(err).lower() else 400

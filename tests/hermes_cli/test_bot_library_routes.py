@@ -86,4 +86,4 @@ def test_distribution_errors_are_client_errors_with_the_message(profile_env, pat
 def test_scan_of_a_missing_folder_is_a_client_error(profile_env, tmp_path):
     resp = _get(str(tmp_path / "nope"))
 
-    assert resp.status_code == 400 and "bot library folder" in resp.json()["detail"]
+    assert resp.status_code == 400 and resp.json()["detail"] == "The library folder is not available."

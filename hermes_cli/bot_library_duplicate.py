@@ -3,7 +3,8 @@
 A library bot is locked (:mod:`hermes_cli.bot_library_locks`); duplicating it is how a user customises
 one. The copy carries the bot's persona, skills, settings and scheduled-job definitions and nothing
 that is personal or tied to the library: no memories, sessions, credentials (``.env``) or
-memory-provider keys, and none of ``distribution.yaml``, ``.library-owned.json`` or
+memory-provider keys (the one exception is the user's own provider key and model, which every bot the
+user makes receives: :mod:`hermes_cli.bot_library_credentials`), and none of ``distribution.yaml``, ``.library-owned.json`` or
 ``.library-backup/``, so a library update never reaches it. Jobs arrive paused, like a library install's.
 
 Built on :func:`hermes_cli.profiles.create_profile` (no clone options: ``--clone`` would copy ``.env``
@@ -16,6 +17,7 @@ import re
 import shutil
 from pathlib import Path
 
+from hermes_cli.bot_library_credentials import seed_provider_setup
 from hermes_cli.profile_distribution import DistributionError
 
 _SLUG_RE = re.compile(r"[^a-z0-9_-]+")
@@ -77,6 +79,7 @@ def duplicate_profile(source: str, name: str) -> str:
     target = create_profile(new_id, soul=soul.read_text(encoding="utf-8-sig") if soul.is_file() else None)
     try:
         _fill_copy(source_dir, target)
+        seed_provider_setup(target)  # ReAgent: the copy runs on the user's provider, like a new bot
         description = read_profile_meta(source_dir)["description"]
         if display_name or description:
             write_profile_meta(target, display_name=display_name or None, description=description or None)

@@ -274,6 +274,87 @@ def test_cron_ownership_is_in_the_ledger_and_survives_without_the_distribution(b
     assert library_cron_refusal(bot, "someone-elses") is None
 
 
+# --- dashboard skills routes and the hub installer ----------------------------------------------
+# The agent's skill_manage is covered above; these are the other writers that reach a shipped skill.
+# Toggling a skill is a config.yaml state change and stays allowed.
+
+PARAMS = {"profile": "hr-bot"}
+
+
+def _put_content(name: str, content: str):
+    return client.put("/api/skills/content", params=PARAMS, json={"name": name, "content": content}, headers=HEADERS)
+
+
+def test_editing_a_shipped_skill_through_the_dashboard_is_a_409_and_leaves_the_file(bot, reagent):
+    before = (bot / "skills" / "alpha" / "SKILL.md").read_text()
+
+    resp = _put_content("alpha", SKILL.format(n="alpha").replace("# alpha", "# hacked"))
+
+    assert resp.status_code == 409
+    assert resp.json()["detail"] == f"This skill belongs to the hr-bot {OWNED_TAIL}"
+    assert (bot / "skills" / "alpha" / "SKILL.md").read_text() == before
+
+
+def test_user_skills_of_a_locked_bot_stay_editable_and_creatable_and_any_skill_can_be_toggled(bot, reagent):
+    assert _put_content("mine", SKILL.format(n="mine").replace("step one", "step two")).status_code == 200
+    assert "step two" in (bot / "skills" / "mine" / "SKILL.md").read_text()
+
+    created = client.post("/api/skills", params=PARAMS, headers=HEADERS,
+                          json={"name": "fresh", "content": SKILL.format(n="fresh")})
+    assert created.status_code == 200, created.text
+
+    toggled = client.put("/api/skills/toggle", params=PARAMS, headers=HEADERS,
+                         json={"name": "alpha", "enabled": False})
+    assert toggled.status_code == 200 and toggled.json()["enabled"] is False
+
+
+def test_creating_a_skill_inside_a_shipped_skill_is_a_409(bot, reagent):
+    resp = client.post("/api/skills", params=PARAMS, headers=HEADERS,
+                       json={"name": "sneaky", "category": "alpha", "content": SKILL.format(n="sneaky")})
+
+    assert resp.status_code == 409 and resp.json()["detail"].endswith(OWNED_TAIL)
+    assert not (bot / "skills" / "alpha" / "sneaky").exists()
+
+
+def test_a_shipped_skill_is_editable_through_the_dashboard_without_the_distribution(bot):
+    resp = _put_content("alpha", SKILL.format(n="alpha").replace("# alpha", "# mine"))
+
+    assert resp.status_code == 200, resp.text
+    assert "# mine" in (bot / "skills" / "alpha" / "SKILL.md").read_text()
+
+
+def _quarantined(skills_dir, name: str):
+    from tools.skills_guard import ScanResult
+    from tools.skills_hub_models import SkillBundle
+
+    q_dir = skills_dir / ".hub" / "quarantine" / "pending"
+    q_dir.mkdir(parents=True)
+    (q_dir / "SKILL.md").write_text(f"---\nname: {name}\ndescription: hub\n---\nhub copy\n")
+    bundle = SkillBundle(name=name, files={"SKILL.md": "x"}, source="community", identifier="x",
+                         trust_level="community")
+    return q_dir, bundle, ScanResult(skill_name=name, source="community", trust_level="community", verdict="safe")
+
+
+@pytest.mark.parametrize("name,allowed", [("alpha", False), ("hub-extra", True)])
+def test_hub_install_cannot_replace_a_shipped_skill(active, reagent, name, allowed):
+    from unittest.mock import patch
+
+    import tools.skills_hub as hub
+    from tools.skills_hub_install import install_from_quarantine
+
+    skills_dir = active / "skills"
+    q_dir, bundle, scan = _quarantined(skills_dir, name)
+
+    with patch.object(hub, "SKILLS_DIR", skills_dir), patch.object(hub, "QUARANTINE_DIR", skills_dir / ".hub" / "quarantine"):
+        if allowed:
+            assert (install_from_quarantine(q_dir, name, "", bundle, scan) / "SKILL.md").is_file()
+        else:
+            with pytest.raises(ValueError, match="belongs to the hr-bot library bot"):
+                install_from_quarantine(q_dir, name, "", bundle, scan)
+
+    assert "# alpha" in (skills_dir / "alpha" / "SKILL.md").read_text()
+
+
 # --- rows ----------------------------------------------------------------------------------------
 
 def test_profile_rows_expose_the_lock_state_only_in_a_reagent_distribution(bot, monkeypatch):

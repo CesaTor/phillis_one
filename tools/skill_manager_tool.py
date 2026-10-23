@@ -773,7 +773,7 @@ def skill_manage(
     session_id: str | None = None, operations=None) -> str:
     """Dispatch to the action handler -> JSON string. ``operations`` (atomic batch shape,
     see _skill_manage_batch) overrides the flat fields."""
-    if (locked := library_skill_refusal(action, name, operations)) is not None:  # ReAgent library bots only
+    if (locked := library_skill_refusal(action, name, operations, category)) is not None:  # ReAgent library bots only
         return json.dumps(_err(locked), ensure_ascii=False)
     if operations is not None:
         return _skill_manage_batch(

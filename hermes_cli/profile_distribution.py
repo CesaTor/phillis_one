@@ -68,6 +68,18 @@ class DistributionError(Exception):
     """Raised for distribution install/update failures."""
 
 
+class GitCloneError(DistributionError):
+    """git could not fetch a source (no network, unknown repository, access refused, git missing)."""
+
+
+class SourceNotFoundError(DistributionError):
+    """A local source folder does not exist or cannot be read."""
+
+
+class ManifestMissingError(DistributionError):
+    """A source folder holds no ``distribution.yaml``."""
+
+
 # Manifest
 
 def _str(data: dict, key: str, default: str = "") -> str:
@@ -251,9 +263,9 @@ def _git_clone(url: str, dest: Path) -> None:
             capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
     except FileNotFoundError as exc:
-        raise DistributionError("git is required for git-URL installs") from exc
+        raise GitCloneError("git is required for git-URL installs") from exc
     if result.returncode != 0:
-        raise DistributionError(f"git clone failed: {(result.stderr or '').strip()}")
+        raise GitCloneError(f"git clone failed: {(result.stderr or '').strip()}")
 
 
 def _git_subdir(clone: Path, subdir: str) -> Path:
@@ -291,12 +303,12 @@ def _stage_source(source: str, workdir: Path) -> tuple[Path, str]:
             "A local-directory source must contain a distribution.yaml at its root."
         )
     else:
-        raise DistributionError(
+        raise SourceNotFoundError(
         f"Cannot resolve distribution source: {source!r}. "
         "Expected a git URL (e.g. github.com/user/repo) or a local directory."
     )
     if not (staged / MANIFEST_FILENAME).is_file():
-        raise DistributionError(missing)
+        raise ManifestMissingError(missing)
     return staged, provenance
 
 
@@ -338,7 +350,7 @@ def plan_install(source: str, workdir: Path, override_name: Optional[str] = None
     _reject_distribution_symlinks(staged)
     manifest = read_manifest(staged)
     if manifest is None:
-        raise DistributionError(
+        raise ManifestMissingError(
             f"No {MANIFEST_FILENAME} found at the distribution root — this source is not a Hermes distribution."
         )
     check_hermes_requires(manifest.hermes_requires, get_version_info().base_version)  # fail fast

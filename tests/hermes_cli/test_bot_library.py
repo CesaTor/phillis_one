@@ -14,6 +14,7 @@ import pytest
 from hermes_cli import bot_library
 from hermes_cli.bot_library import (
     CloudPlaceholderError, install_entry, rollback_profile, scan_library, sync_installed, update_profile)
+from hermes_cli.bot_library_messages import FILES_NOT_DOWNLOADED
 from hermes_cli.bot_library_ledger import BACKUP_DIRNAME, LEDGER_FILENAME, read_ledger
 from hermes_cli.profile_distribution import DistributionError, read_manifest
 from hermes_cli.profiles import get_profile_dir
@@ -177,7 +178,7 @@ def test_online_only_files_are_refused_with_a_download_hint(profile_env, library
         install_entry(str(entry))
     assert not get_profile_dir("hr-bot").exists()
     scanned = scan_library(str(library))[0]
-    assert scanned["status"] == "error" and "SOUL.md" in scanned["error"]
+    assert scanned["status"] == "error" and scanned["error"] == FILES_NOT_DOWNLOADED
 
 
 def test_windows_recall_attributes_count_as_online_only(tmp_path, monkeypatch):

@@ -14,6 +14,7 @@ import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from agent.skill_utils import is_excluded_skill_path
+from hermes_cli.bot_library_locks import library_skill_install_refusal
 from tools.skills_guard import ScanResult, content_hash
 from tools.skills_hub_github import GitHubAuth
 from tools.skills_hub_models import (
@@ -156,6 +157,8 @@ def install_from_quarantine(
     # Same validator the uninstaller uses, so a lock entry can never point at a
     # symlink-redirected target.
     install_dir = _resolve_lock_install_path(install_rel_path, safe_skill_name)
+    if locked := library_skill_install_refusal(install_rel_path):  # ReAgent library bots only
+        raise ValueError(locked)
     _check_install_target(install_dir)
     if install_dir.exists():
         shutil.rmtree(install_dir)
