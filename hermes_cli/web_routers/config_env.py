@@ -11,6 +11,7 @@ import asyncio
 import time
 import urllib.parse
 from fastapi import APIRouter
+from hermes_cli.bot_library_locks import locked_as_conflict
 from hermes_cli.web_routers._common import (
     REDACTED_CREDENTIAL_WRITE_DETAIL, http_failure, is_redacted_credential_preview,
     redacted_credential_preview, scoped_to_thread,
@@ -152,7 +153,7 @@ async def update_config(
             _broadcast_gateway_session_info()
         return {"ok": True}
 
-    with http_failure("PUT /api/config failed", 500, detail="Internal server error"):
+    with http_failure("PUT /api/config failed", 500, detail="Internal server error"), locked_as_conflict():
         return await asyncio.to_thread(_run)
 
 

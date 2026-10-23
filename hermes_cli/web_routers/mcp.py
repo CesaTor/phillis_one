@@ -17,6 +17,7 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
+from hermes_cli.bot_library_locks import refuse_http_config_key
 from hermes_cli.web_deps import late
 from hermes_cli.web_server_mcp import _mcp_oauth_flows, _mcp_server_summary, _normalize_mcp_server_create
 from hermes_cli.web_models import MCPCatalogInstall, MCPEnabledToggle, MCPServerCreate, MCPServersReplace
@@ -122,6 +123,7 @@ async def add_mcp_server(body: MCPServerCreate, profile: Optional[str] = None):
         # check sits under the same lock span so a concurrent add can't slip
         # between check and save.
         with config_write_scope(body.profile or profile):
+            refuse_http_config_key("mcp_servers")  # ReAgent library bots: replaced on update
             config_servers = _get_mcp_servers()
             from tui_gateway.mcp_rpc_helpers import server_configs_with_sources
 
@@ -166,6 +168,7 @@ async def replace_mcp_servers(body: MCPServersReplace, profile: Optional[str] = 
 
     def _run():
         with config_write_scope(body.profile or profile):
+            refuse_http_config_key("mcp_servers")
             from tui_gateway.mcp_rpc_helpers import server_configs_with_sources
 
             _servers, plugins = server_configs_with_sources({})
@@ -186,6 +189,7 @@ async def remove_mcp_server(name: str, profile: Optional[str] = None):
 
     def _run():
         with config_write_scope(profile):
+            refuse_http_config_key("mcp_servers")
             config_servers = _get_mcp_servers()
             from tui_gateway.mcp_rpc_helpers import server_configs_with_sources
 
@@ -375,6 +379,7 @@ async def set_mcp_server_enabled(name: str, body: MCPEnabledToggle, profile: Opt
     servers stay in config so they can be re-enabled without re-entry."""
     def _run():
         with config_write_scope(body.profile or profile):
+            refuse_http_config_key("mcp_servers")
             cfg = load_config()
             from tui_gateway.mcp_rpc_helpers import server_configs_with_sources
 
@@ -498,6 +503,7 @@ async def install_mcp_catalog_entry(body: MCPCatalogInstall, profile: Optional[s
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     effective_profile = body.profile or profile
+    await scoped_to_thread(effective_profile, lambda: refuse_http_config_key("mcp_servers"))
     # Secrets are persisted to .env here (before install_entry runs); non-secret
     # values ride preloaded_env into install_entry → config.yaml, so .env stays
     # secrets-only and nothing re-prompts on a non-TTY server.

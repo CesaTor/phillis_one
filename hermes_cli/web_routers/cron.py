@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 
+from hermes_cli.bot_library_locks import library_cron_refusal, refuse_http
 from hermes_cli.web_deps import late
 from hermes_cli.config import cfg_get
 from hermes_cli.web_server_cron import (
@@ -643,6 +644,7 @@ def _update_cron_job_sync(job_id: str, body: CronJobUpdate, profile: Optional[st
             if "skills" in updates and "skill" not in updates:
                 effective["skill"] = None
             _validate_dashboard_cron_effective_job(effective)
+        refuse_http(library_cron_refusal(profile_home, job_id, updates))  # ReAgent library bots
         job = _mutate_cron_for_profile(profile_name, "update_job", job_id, updates)
     except HTTPException:
         raise
@@ -684,6 +686,7 @@ def _trigger_cron_job_sync(job_id: str, profile: Optional[str] = None):
 def _delete_cron_job_sync(job_id: str, profile: Optional[str] = None):
     selected = _job_profile(job_id, profile)
     try:
+        refuse_http(library_cron_refusal(_cron_profile_home(selected)[1], job_id))  # ReAgent library bots
         removed = _mutate_cron_for_profile(selected, "remove_job", job_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

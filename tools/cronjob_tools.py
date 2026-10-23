@@ -13,7 +13,8 @@ from typing import Any, Dict, List, Optional, Union
 
 import copy
 
-from hermes_constants import display_hermes_home
+from hermes_cli.bot_library_locks import library_cron_refusal
+from hermes_constants import display_hermes_home, get_hermes_home
 
 logger = logging.getLogger(__name__)
 
@@ -730,6 +731,8 @@ def _action_list(a: dict[str, Any]) -> str:
 
 def _action_remove(job: dict[str, Any], a: dict[str, Any]) -> str:
     job_id = job["id"]
+    if locked := library_cron_refusal(get_hermes_home(), job_id):  # ReAgent library bots
+        return tool_error(locked, success=False)
     if not remove_job(job_id):
         return tool_error(f"Failed to remove job '{job_id}'", success=False)
     _notify_provider_jobs_changed_safe()
@@ -947,6 +950,8 @@ def _action_update(job: dict[str, Any], a: dict[str, Any]) -> str:
             return tool_error(error, success=False)
     if not updates:
         return tool_error("No updates provided.", success=False)
+    if locked := library_cron_refusal(get_hermes_home(), job["id"], updates):  # ReAgent library bots
+        return tool_error(locked, success=False)
     updated = update_job(job["id"], updates)
     _notify_provider_jobs_changed_safe()
     # An update can switch modes or delivery — echo the same guidance as create.

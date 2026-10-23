@@ -31,6 +31,7 @@ from fastapi import APIRouter, HTTPException, Query
 from hermes_cli.session_listing import subagent_listing_scope
 from hermes_cli.web_deps import late
 from hermes_cli.config import get_process_hermes_home
+from hermes_cli.bot_library_locks import profile_lock_fields, refuse_http_file
 from hermes_cli.profiles import ProfileIdentitySettlementPending
 from hermes_cli.web_server_config import (
     _apply_main_model_assignment, _normalize_main_model_assignment, _validated_main_model_selection,
@@ -97,7 +98,8 @@ def _profile_to_dict(info) -> dict[str, Any]:
         "distribution_name": attr("distribution_name", None),
         "distribution_version": attr("distribution_version", None),
         "distribution_source": attr("distribution_source", None),
-        "has_alias": attr("alias_path", None) is not None}
+        "has_alias": attr("alias_path", None) is not None,
+        **profile_lock_fields(Path(str(attr("path", ""))))}
 
 
 def _profile_setup_command(name: str) -> str:
@@ -1015,6 +1017,7 @@ async def get_profile_soul(name: str):
 @router.put("/api/profiles/{name}/soul")
 async def update_profile_soul(name: str, body: ProfileSoulUpdate):
     soul_path = _resolve_profile_dir(name) / "SOUL.md"
+    refuse_http_file(soul_path.parent, "SOUL.md")  # ReAgent library bots: replaced on update
 
     def _run():
         from utils import atomic_write_text

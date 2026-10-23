@@ -31,6 +31,11 @@ class BotProfileBody(BaseModel):
     profile: str
 
 
+class BotDuplicateBody(BaseModel):
+    profile: str
+    name: str
+
+
 @contextlib.contextmanager
 def _distribution_errors(log_msg: str):
     """``DistributionError`` / bad profile name -> 400 with its message; anything else -> logged 500."""
@@ -95,3 +100,13 @@ async def rollback_bot(body: BotProfileBody):
     profile = require(body.profile, "profile is required")
     done = await _run("POST /api/bot-library/rollback failed", lambda: rollback_profile(profile))
     return {"profile": done["profile"], "version": done["version"]}
+
+
+@router.post("/api/bot-library/duplicate")
+async def duplicate_bot(body: BotDuplicateBody):
+    """An independent, unlocked copy of a bot (the way to customise a locked library bot)."""
+    from hermes_cli.bot_library_duplicate import duplicate_profile
+
+    profile = require(body.profile, "profile is required")
+    name = require(body.name, "name is required")
+    return {"profile": await _run("POST /api/bot-library/duplicate failed", lambda: duplicate_profile(profile, name))}

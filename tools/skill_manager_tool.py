@@ -22,6 +22,7 @@ import hermes_yaml as yaml
 from hermes_constants import get_hermes_home
 from utils import atomic_write_text, is_truthy_value
 from hermes_cli.config import cfg_get
+from hermes_cli.bot_library_locks import library_skill_refusal
 from agent.skill_utils import (
     extract_skill_description,
     is_skill_description_truncated_for_prompt,
@@ -772,6 +773,8 @@ def skill_manage(
     session_id: str | None = None, operations=None) -> str:
     """Dispatch to the action handler -> JSON string. ``operations`` (atomic batch shape,
     see _skill_manage_batch) overrides the flat fields."""
+    if (locked := library_skill_refusal(action, name, operations)) is not None:  # ReAgent library bots only
+        return json.dumps(_err(locked), ensure_ascii=False)
     if operations is not None:
         return _skill_manage_batch(
             operations, default_name=name or None, task_id=task_id, session_id=session_id)

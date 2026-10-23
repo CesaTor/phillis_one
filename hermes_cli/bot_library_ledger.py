@@ -76,8 +76,28 @@ def write_ledger(profile_dir: Path, version: str, paths: list[str], **extra: Any
     atomic_json_write(profile_dir / LEDGER_FILENAME, {"version": version, "paths": paths, **extra})
 
 
+def shipped_cron_job_ids(staged: Path, manifest) -> list[str]:
+    """Ids of the cron jobs the distribution ships (merged by id into the profile, never replaced),
+    so a locked bot can tell its library jobs from ones the user or agent scheduled."""
+    from hermes_cli.profile_distribution import _owned_entries, _shipped_cron_store
+
+    store = _shipped_cron_store(list(_owned_entries(staged, manifest)))
+    if store is None:
+        return []
+    try:
+        data = json.loads(store.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return []  # the cron merge already rejected an unreadable store before this runs
+    jobs = data.get("jobs", []) if isinstance(data, dict) else data
+    if isinstance(jobs, dict):  # id-keyed map: the inline id wins, else the key (cron.jobs.load_jobs)
+        jobs = [{**v, "id": v.get("id") or k} for k, v in jobs.items() if isinstance(v, dict)]
+    ids = {str(j["id"]) for j in jobs if isinstance(j, dict) and j.get("id")} if isinstance(jobs, list) else set()
+    return sorted(ids)
+
+
 def record_library_ownership(staged: Path, target: Path, manifest, preserve_config: bool) -> None:
-    write_ledger(target, manifest.version, library_paths(staged, manifest, preserve_config))
+    write_ledger(target, manifest.version, library_paths(staged, manifest, preserve_config),
+                 cron_job_ids=shipped_cron_job_ids(staged, manifest))
 
 
 def _slug(version: str) -> str:
@@ -157,6 +177,8 @@ def rollback(profile_dir: Path) -> str:
         _drop_added_files(profile_dir, current["paths"], prior)
     for src in sorted(p for p in snap.rglob("*") if p.is_file() and p != snap / _META_FILENAME):
         _copy_file(src, profile_dir / src.relative_to(snap))
-    write_ledger(profile_dir, meta["from_version"], prior, rolled_back_from=meta["to_version"])
+    # Cron jobs are merged by id and not rolled back, so the jobs the library shipped stay library-owned.
+    write_ledger(profile_dir, meta["from_version"], prior, rolled_back_from=meta["to_version"],
+                 cron_job_ids=(current or {}).get("cron_job_ids", []))
     shutil.rmtree(snap)
     return meta["from_version"]
