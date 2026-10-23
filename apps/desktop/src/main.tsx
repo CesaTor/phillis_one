@@ -31,6 +31,7 @@ import App from './app'
 import { RootErrorBoundary } from './components/error-boundary'
 import { HapticsProvider } from './components/haptics-provider'
 import { RootTooltipProvider } from './components/ui/tooltip'
+import { BotLibraryOnboarding } from './distribution/bot-library/onboarding'
 import { ProfileI18nProvider as I18nProvider } from './i18n/profile-provider'
 import { installClipboardShim } from './lib/clipboard'
 import { queryClient } from './lib/query-client'
@@ -115,6 +116,7 @@ if (winParam === 'overlay') {
                     Disabling transitions makes navigate() commit at default priority. */}
                   <HashRouter useTransitions={false}>
                     <App />
+                    <BotLibraryOnboarding />
                   </HashRouter>
                 </RootTooltipProvider>
               </HapticsProvider>

@@ -16,6 +16,20 @@ export type DistributionId = 'hermes' | 'reagent'
 
 export type SessionsPart = 'cron' | 'filters' | 'messaging' | 'profiles' | 'projects'
 
+/** Where ReAgent's Bot Library finds certified bots (`src/distribution/bot-library/`). Departments
+ *  publish bots into a synced Drive/Nextcloud folder; its permissions decide who can read what, the
+ *  app never enforces access. Layout: `<root>/<departmentsFolder>/<Department>/<botsFolder>/<bot>/distribution.yaml`. */
+export interface BotLibraryPolicy {
+  /** The standard bots every department gets, kept on GitHub (a second source in the library). */
+  baseCatalogUrl: string
+  /** Its name in the library view. */
+  baseCatalogLabel: string
+  /** Inside a department folder: one subfolder per certified bot. */
+  botsFolder: string
+  /** Inside the library root: one subfolder per department. */
+  departmentsFolder: string
+}
+
 interface DistributionPolicy {
   /** "Add provider…" doors in the model menus (Edit models, the model picker). */
   addProvider: boolean
@@ -27,6 +41,8 @@ interface DistributionPolicy {
   chooseProviderLater: boolean
   /** Env-var credentials searchable from settings search (provider keys included). */
   credentialKeys: RegExp
+  /** The organization's bot library (departments, certified bots, base catalog); absent = no library. */
+  botLibrary: BotLibraryPolicy | null
   /** The `default` profile's @handle (shown, completed, routed). The backend's `hermes` alias keeps
    *  routing to it: agents stamp it, and older rooms carry it. */
   defaultBotHandle: string
@@ -87,6 +103,13 @@ interface DistributionPolicy {
 const REAGENT: DistributionPolicy = {
   addProvider: false,
   assets: { 'nous-girl.png': 'reagent/mark.png', 'nous-girl-dark.png': 'reagent/mark.png' },
+  botLibrary: {
+    baseCatalogLabel: 'Standard bots',
+    // Placeholder until ReQurv publishes the catalog repository.
+    baseCatalogUrl: 'https://github.com/ReQurv/reagent-bots',
+    botsFolder: 'Biblioteca agenti',
+    departmentsFolder: 'Reparti'
+  },
   bundledPlugins: new Set(['hermes-bots']),
   // Without a Hive key the bot chat cannot open (the backend rejects a session with no model).
   chooseProviderLater: false,
@@ -118,6 +141,7 @@ const REAGENT: DistributionPolicy = {
     'config:appearance',
     'config:memory',
     'config:safety',
+    'bot-library',
     'providers',
     'keybinds',
     'about'
@@ -345,6 +369,11 @@ export function defaultThemeName(): string | undefined {
 /** Whether a distribution-owned built-in theme is registered. Upstream owns none, so none registers. */
 export function themeAllowed(name: string): boolean {
   return policy()?.themes.has(name) ?? false
+}
+
+/** The library's folder convention and base catalog; null where the distribution has no bot library. */
+export function botLibraryPolicy(): BotLibraryPolicy | null {
+  return policy()?.botLibrary ?? null
 }
 
 export function settingsViewAllowed(view: string): boolean {

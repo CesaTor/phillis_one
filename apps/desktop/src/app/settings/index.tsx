@@ -6,6 +6,8 @@ import { codiconIcon } from '@/components/ui/codicon'
 import { KbdCombo } from '@/components/ui/kbd'
 import { Tip } from '@/components/ui/tooltip'
 import { filterSettingsNav, settingsViewAllowed } from '@/distribution'
+import { BotLibrarySettings } from '@/distribution/bot-library/settings'
+import { botLibraryNavGroups, botLibrarySettingsViews } from '@/distribution/bot-library/settings-nav'
 import { getHermesConfigDefaults, getHermesConfigRecord, saveHermesConfig } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
@@ -84,7 +86,8 @@ const ALL_SETTINGS_VIEWS: readonly SettingsViewId[] = [
   'billing',
   'sessions',
   'plugins',
-  'about'
+  'about',
+  ...botLibrarySettingsViews()
 ]
 
 const SETTINGS_VIEWS = ALL_SETTINGS_VIEWS.filter(settingsViewAllowed)
@@ -93,6 +96,7 @@ const SETTINGS_VIEWS = ALL_SETTINGS_VIEWS.filter(settingsViewAllowed)
 const SUBPAGE_VIEWS: Partial<Record<SettingsViewId, ComponentType<{ subpage?: string }>>> = {
   'config:appearance': AppearanceSettings,
   about: AboutSettings,
+  'bot-library': BotLibrarySettings,
   // 'connections' renders the unified page too so the frame before the alias
   // redirect lands doesn't flash the fallback view.
   connections: GatewaySettings,
@@ -310,6 +314,7 @@ export function SettingsView({ onClose, onConfigSaved, onMainModelChanged }: Set
             label: t.settings.nav.billing,
             onSelect: () => setActiveView('billing')
           },
+          ...botLibraryNavGroups(activeView, setActiveView),
           {
             active: activeView === 'providers',
             children: [

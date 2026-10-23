@@ -14,6 +14,7 @@ import {
 import { seatableGroupBots, useGroupCapability } from './canonical-group-capabilities'
 import { botSourceStatus } from './data'
 import type { useBots } from './i18n'
+import { BotLibraryButton } from './library-button'
 import { setActivityToasts } from './roster-actions'
 import { GatewayKindGlyph } from './roster-sections'
 import type { rosterGatewayOptions } from './roster-sections'
@@ -106,6 +107,7 @@ export function renderRosterToolbar({
               <Codicon name={activityToasts ? 'bell' : 'bell-slash'} />
             </Button>
           </Tip>
+          <BotLibraryButton />
           <DropdownMenu>
             <Tip label="New…">
               <DropdownMenuTrigger asChild>

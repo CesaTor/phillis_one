@@ -1,5 +1,6 @@
 import { botActivitySession } from './data'
 import { botRosterKey, filterBots, preferReachableSameNameRows } from './data'
+import { isHiddenByDepartment } from './department-hidden'
 import type { $groupChats } from './group-chat'
 import { groupChatMemberBots, groupChatNames, groupLastActivity } from './group-membership'
 import { sortGroupRosterRows } from './group-order'
@@ -37,6 +38,7 @@ interface RosterRowsInput {
   rowKindFilter: RosterKindFilter
   groupRooms: ReturnType<typeof $groupChats.get>
   activeRosterKeys: Set<string>
+  departmentHidden: ReadonlySet<string>
   gatewayOptions: ReturnType<typeof rosterGatewayOptions>
   activityOf: (bot: RosterRow) => number
   isPinned: (bot: RosterRow) => boolean
@@ -51,6 +53,7 @@ export function deriveRosterRows({
   rowKindFilter,
   groupRooms,
   activeRosterKeys,
+  departmentHidden,
   gatewayOptions,
   activityOf,
   isPinned
@@ -58,8 +61,9 @@ export function deriveRosterRows({
   const activeSourceRoster = roster.filter(bot => !bot.remoteSource)
   // Hidden rows remain fully alive and recoverable at the bottom. Every
   // non-display consumer continues to receive the complete roster.
-  const hiddenBots = roster.filter(bot => isBotHidden(bot, allMeta))
-  const visibleRoster = roster.filter(bot => !isBotHidden(bot, allMeta))
+  const listed = roster.filter(bot => !isHiddenByDepartment(bot, departmentHidden))
+  const hiddenBots = listed.filter(bot => isBotHidden(bot, allMeta))
+  const visibleRoster = listed.filter(bot => !isBotHidden(bot, allMeta))
   const gatewayRoster = filterBotsByGateway(visibleRoster, gatewayFilter)
 
   const filteredRoster = filterBots(gatewayRoster, allMeta, query).filter((bot: RosterRow) =>

@@ -1,6 +1,7 @@
 import { renameProfile } from '@/hermes'
 import { $profiles, refreshProfiles } from '@/store/profile'
 
+import { startBotLibrarySync } from './bot-library/sync'
 import { seedDefaultSoul } from './seed-soul'
 
 import { defaultBotName, distribution } from '.'
@@ -35,4 +36,5 @@ function seedDefaultBotName(): void {
 if (distribution() !== 'hermes') {
   seedDefaultBotName()
   seedDefaultSoul()
+  startBotLibrarySync()
 }

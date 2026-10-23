@@ -33,6 +33,7 @@ import {
   sourceByConnection,
   useRoster
 } from './data'
+import { useDepartmentHiddenBots } from './department-hidden'
 import { $groupChats, $groupChatWorkspace, $groupClarify, $groupNeedsYou } from './group-chat'
 import { GroupChatWorkspace, openGroupChat } from './group-chat-view'
 import { groupChatMemberBots } from './group-membership'
@@ -330,6 +331,7 @@ export function BotsPane() {
     }
   }, [gatewayFilterExists])
   const hiddenExpanded = useValue($showHiddenBots)
+  const departmentHidden = useDepartmentHiddenBots()
 
   const {
     activeSourceRoster,
@@ -350,6 +352,7 @@ export function BotsPane() {
     rowKindFilter,
     groupRooms,
     activeRosterKeys,
+    departmentHidden,
     gatewayOptions,
     activityOf,
     isPinned
