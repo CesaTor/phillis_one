@@ -26,6 +26,8 @@ from hermes_cli.profiles import (
     DEFAULT_EXPORT_EXCLUDE_ROOT, profile_path_contains_private_store,
     profile_path_is_private,
 )
+from hermes_cli.bot_library_ledger import record_library_ownership, snapshot_before_update
+from hermes_cli.profile_distribution_managed import apply_managed_config, parse_config_managed
 from utils import rmtree_readonly
 
 
@@ -110,6 +112,8 @@ class DistributionManifest:
     license: str = ""
     env_requires: list[EnvRequirement] = field(default_factory=list)
     distribution_owned: list[str] = field(default_factory=list)
+    # config.yaml keys (top-level or dotted) the distribution keeps authoritative on update.
+    config_managed: list[str] = field(default_factory=list)
     # Tracked after install — where we pulled from, so ``update`` can re-pull.
     source: str = ""
     # ISO-8601 UTC timestamp written on install/update (empty in repo-shipped manifests).
@@ -133,6 +137,7 @@ class DistributionManifest:
             hermes_requires=_str(data, "hermes_requires"), author=_str(data, "author"),
             license=_str(data, "license"), env_requires=[EnvRequirement.from_dict(e) for e in env_raw],
             distribution_owned=[str(p).strip().strip("/") for p in dist_owned_raw if str(p).strip()],
+            config_managed=parse_config_managed(data.get("config_managed")),
             source=_str(data, "source"), installed_at=_str(data, "installed_at"),
         )
 
@@ -143,7 +148,8 @@ class DistributionManifest:
             ("description", self.description), ("hermes_requires", self.hermes_requires),
             ("author", self.author), ("license", self.license),
             ("env_requires", [e.to_dict() for e in self.env_requires]),
-            ("distribution_owned", self.distribution_owned), ("source", self.source),
+            ("distribution_owned", self.distribution_owned), ("config_managed", self.config_managed),
+            ("source", self.source),
             ("installed_at", self.installed_at),
         )
         out.update((k, v) for k, v in optional if v)
@@ -250,16 +256,29 @@ def _git_clone(url: str, dest: Path) -> None:
         raise DistributionError(f"git clone failed: {(result.stderr or '').strip()}")
 
 
+def _git_subdir(clone: Path, subdir: str) -> Path:
+    """The ``#<subdir>`` folder of a fresh clone (the clone itself when empty); never outside it."""
+    if not subdir:
+        return clone
+    try:
+        return clone.joinpath(*normalize_archive_parts(subdir))
+    except ValueError as exc:
+        raise DistributionError(f"Invalid distribution subfolder {subdir!r}: {exc}") from exc
+
+
 def _stage_source(source: str, workdir: Path) -> tuple[Path, str]:
     """Resolve *source* to ``(staged_dir, provenance)``: git URLs are shallow-cloned into
-    *workdir* (``.git`` removed); a local directory is used in place."""
+    *workdir* (``.git`` removed); a local directory is used in place. A git URL may end in
+    ``#<subdir>`` to stage one folder of a multi-distribution repository (the bot library)."""
     src_str = source.strip()
-    if _looks_like_git_url(src_str):
+    git_url, _, subdir = src_str.partition("#")
+    if _looks_like_git_url(git_url):
         staged, provenance = workdir / "clone", src_str
-        _git_clone(src_str, staged)
+        _git_clone(git_url, staged)
         # Not ``ignore_errors``: a half-deleted ``.git`` (read-only objects on Windows) would
         # otherwise be copied into the profile as distribution content (#117184).
         rmtree_readonly(staged / ".git")
+        staged = _git_subdir(staged, subdir)
         missing = (
             f"No {MANIFEST_FILENAME} at the root of {src_str!r}. "
             "This repository is not a Hermes profile distribution."
@@ -542,6 +561,7 @@ def _copy_dist_payload(staged: Path, target: Path, manifest: DistributionManifes
     target.mkdir(parents=True, exist_ok=True)
     entries = list(_owned_entries(staged, manifest))
     _refuse_symlinked_targets(target, entries)
+    snapshot_before_update(staged, target, manifest, preserve_config)
 
     # The cron merge runs first: it is the one step that can reject shipped content
     # (an unschedulable job), and rejecting before any file is replaced keeps the profile whole.
@@ -570,8 +590,11 @@ def _copy_dist_payload(staged: Path, target: Path, manifest: DistributionManifes
     if manifest.env_requires and not (target / ENV_EXAMPLE_FILENAME).exists():
         (target / ENV_EXAMPLE_FILENAME).write_text(_env_template_from_manifest(manifest), encoding="utf-8")
 
+    if preserve_config:
+        apply_managed_config(staged, target, manifest)
     # Make sure the manifest on disk reflects resolved name + source
     write_manifest(target, manifest)
+    record_library_ownership(staged, target, manifest, preserve_config)
 
 
 def _bootstrap_user_dirs(target: Path) -> None:

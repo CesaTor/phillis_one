@@ -780,6 +780,7 @@ from hermes_cli.web_routers import (
     display as _display_routes,
     sessions as _sessions_routes,
     profiles as _profiles_routes,
+    bot_library as _bot_library_routes,
     memory_providers as _memory_providers_routes,
     config_env as _config_env_routes,
     models as _models_routes,
@@ -821,6 +822,7 @@ app.include_router(_mcp_routes.router)
 app.include_router(_ops_routes.router)
 app.include_router(_skills_routes.hub_router)
 app.include_router(_profiles_routes.router)
+app.include_router(_bot_library_routes.router)
 app.include_router(_skills_routes.router)
 app.include_router(_tools_routes.router)
 app.include_router(_analytics_routes.router)
