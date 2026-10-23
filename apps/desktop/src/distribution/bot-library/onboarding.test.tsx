@@ -118,6 +118,26 @@ describe('first-run department pick', () => {
     expect($botDepartment.get()).toEqual({ proposals: 'Sales' })
   })
 
+  it('shows nothing for the standard catalog when it cannot be read, but still reports a department failure', async () => {
+    selectDesktopPaths.mockResolvedValue(['/Drive/Org'])
+    mockApi(request => {
+      if (request.path.includes('github.com')) {
+        throw new Error('Error invoking remote method \'hermes:api\': Error: 500: {"detail":"catalog down"}')
+      }
+
+      return { entries: ENTRIES[SALES], source: '' }
+    })
+
+    await mount()
+    fireEvent.click(screen.getByRole('button', { name: 'Choose folder…' }))
+    fireEvent.click(await screen.findByRole('radio', { name: 'Sales' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+
+    expect(await screen.findByText('proposals')).toBeTruthy()
+    expect(screen.queryByText(/Could not read/)).toBeNull()
+    expect(screen.queryByText(/catalog/i)).toBeNull()
+  })
+
   it('rejects a folder with no departments folder and keeps asking', async () => {
     selectDesktopPaths.mockResolvedValue(['/Drive/Wrong'])
     readDesktopDir.mockResolvedValue({ entries: [], error: 'ENOENT' })

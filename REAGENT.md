@@ -96,6 +96,37 @@ gh run download <run-id> -R CesaTor/phillis_one -D out          # all artifacts 
 - **No updates.** There is no ReAgent update feed: a new version is a reinstall.
 - Windows has no `.exe` or `.msi`: Hermes packages Windows as MSIX only.
 
+## Bot library
+
+Departments publish certified bots as Hermes **profile distributions** (a folder with `distribution.yaml`,
+`SOUL.md`, skills, `config.yaml`, scheduled jobs; never credentials, memories or chats) in a synced
+Drive/Nextcloud folder; the standard catalog lives on GitHub. Drive/Nextcloud permissions decide who can
+read what: the app's department choice is only a filter.
+
+| Piece | Where |
+|---|---|
+| Library layer (scan, install, update, sync, rollback) | `hermes_cli/bot_library.py`, `bot_library_ledger.py`, routes in `hermes_cli/web_routers/bot_library.py` |
+| Library-managed settings (`config_managed` in `distribution.yaml`) | `hermes_cli/profile_distribution_managed.py` |
+| Locks (what an update would overwrite is read-only) | `hermes_cli/bot_library_locks.py`, hooks in skills/file/cron/MCP/config write paths |
+| Duplicate as personal bot; provider key for installed bots | `hermes_cli/bot_library_duplicate.py`, `bot_library_credentials.py` |
+| Cloud placeholder detection | `hermes_platform/host/cloud_files.py` |
+| Screens, department pick, launch sync | `apps/desktop/src/distribution/bot-library/` |
+
+- **Folder convention** (policy `botLibrary` in `distribution/index.ts`): `<org folder>/Reparti/<Department>/Biblioteca agenti/<bot>/`.
+  The standard catalog is `baseCatalogUrl` (placeholder repo, not created yet).
+- **Update model.** Every app start calls `POST /api/bot-library/sync`; a bot updates when its source offers a
+  different version, never mid-conversation. The update replaces library-owned files (SOUL, shipped skills,
+  shipped jobs) and only the `config_managed` keys of `config.yaml`; user skills, jobs, memories, chats and every
+  other setting survive. The previous version is kept in `<profile>/.library-backup/<version>/`
+  (`POST /api/bot-library/rollback`; a rolled-back version is not re-applied by the next sync).
+- **Locks.** In a ReAgent distribution (`HERMES_DISTRIBUTION=reagent`, exported by the desktop to the backend)
+  library-owned content cannot be edited: dashboard routes answer 409, agent tools refuse, the UI shows a lock.
+  Escape hatch: "Duplicate as personal bot". Not covered: shell writes and `hermes cron edit/remove`.
+- **Credentials.** Installed and duplicated bots get the default profile's provider key and model
+  (copy at creation, the same as "New bot"); nothing else from `.env`.
+- **Switching department** hides the previous department's bots (not deleted); their chats stay in Sessions.
+- **Not built:** ReMem, certification/signing of bots, an in-app rollback button, per-job lock flags.
+
 ## Rules that keep upstream syncs cheap
 
 - **Allowlist, never denylist.** A page, settings group, palette jump or plugin upstream

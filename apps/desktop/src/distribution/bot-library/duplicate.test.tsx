@@ -49,6 +49,12 @@ describe('Duplicate as personal bot', () => {
     expect(screen.getByText('Duplicate Proposals')).toBeTruthy()
   })
 
+  it('starts from the bot’s own name when it has no title', async () => {
+    $profiles.set([{ library_locked: true, name: 'proposals' } as ProfileInfo])
+
+    expect(((await open()) as HTMLInputElement).value).toBe('proposals (copy)')
+  })
+
   it('duplicates under the typed name, refreshes the profiles and hands over the copy', async () => {
     const api = mockApi(() => ({ profile: 'proposals-mine' }))
     const opened = vi.fn()

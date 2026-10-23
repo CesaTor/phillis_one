@@ -25,9 +25,9 @@ export function LibraryLockNotice({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground">
-      <span className="flex min-w-0 items-center gap-1.5">
-        <Lock className="size-3.5 shrink-0" />
+    <div className="grid justify-items-start gap-2 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground">
+      <span className="flex min-w-0 items-start gap-1.5">
+        <Lock className="mt-0.5 size-3.5 shrink-0" />
         {copy.lockNotice}
       </span>
       <Button onClick={() => requestDuplicate(profile.name, onDuplicated)} size="sm" variant="outline">

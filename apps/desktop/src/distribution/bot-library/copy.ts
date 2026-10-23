@@ -3,6 +3,7 @@
 
 export const copy = {
   baseCatalogNote: 'Standard bots shared by every department.',
+  catalogUnreachable: 'The standard bots catalog isn’t reachable right now.',
   cancel: 'Cancel',
   change: 'Change',
   changeFolder: 'Change folder',
@@ -68,7 +69,7 @@ export const copy = {
   update: 'Update',
   updating: 'Updating…',
   updatedMany: (items: string[]) => `Bots updated: ${items.join(', ')}`,
-  updatedTo: (label: string, version: string) => `${label} bot updated to ${version}`,
+  updatedTo: (label: string, version: string) => `${label} updated to ${version}`,
   version: (version: string) => `v${version}`,
   yes: 'Yes',
   no: 'No'

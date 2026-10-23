@@ -1,10 +1,10 @@
 import { atom } from 'nanostores'
 
-import { notifyError } from '@/store/notifications'
 import { refreshProfiles } from '@/store/profile'
 
 import { installLibraryBot, type LibraryEntry, listBotLibrary, updateLibraryBot } from './api'
 import { copy } from './copy'
+import { notifyLibraryError, plainError } from './errors'
 import type { LibrarySource } from './folders'
 import { recordBotDepartment } from './store'
 
@@ -29,8 +29,6 @@ export const $busyEntries = atom<ReadonlySet<string>>(new Set())
 let generation = 0
 
 export const entryKey = (source: LibrarySource, entry: LibraryEntry): string => `${source.location}::${entry.name}`
-
-const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error))
 
 function patchListing(location: string, state: ListingState): void {
   $listings.set($listings.get().map(item => (item.source.location === location ? { ...item, state } : item)))
@@ -74,7 +72,7 @@ export async function loadLibrary(sources: LibrarySource[]): Promise<void> {
     sources.map(async source => {
       const state = await listBotLibrary(source.location).then(
         (listing): ListingState => ({ entries: listing.entries, status: 'ready' }),
-        (error: unknown): ListingState => ({ message: messageOf(error), status: 'error' })
+        (error: unknown): ListingState => ({ message: plainError(error), status: 'error' })
       )
 
       if (mine === generation) {
@@ -107,7 +105,7 @@ export async function installEntry(source: LibrarySource, entry: LibraryEntry): 
 
     return true
   } catch (error) {
-    notifyError(error, copy.installFailed(entry.name))
+    notifyLibraryError(error, copy.installFailed(entry.name))
 
     return false
   } finally {
@@ -133,7 +131,7 @@ export async function updateEntry(source: LibrarySource, entry: LibraryEntry): P
 
     return true
   } catch (error) {
-    notifyError(error, copy.updateFailed(entry.name))
+    notifyLibraryError(error, copy.updateFailed(entry.name))
 
     return false
   } finally {

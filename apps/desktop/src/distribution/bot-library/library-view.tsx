@@ -45,7 +45,7 @@ function EntryDetails({ entry }: { entry: LibraryEntry }): ReactElement {
   )
 
   return (
-    <dl className={`grid gap-0.5 ${CAPTION}`}>
+    <dl className={`grid grid-cols-[minmax(0,1fr)] gap-0.5 ${CAPTION}`}>
       <Detail label={copy.skills}>{entry.skills.join(', ') || copy.skillsNone}</Detail>
       <Detail label={copy.scheduledJobs}>{entry.has_cron ? copy.yes : copy.no}</Detail>
       <Detail label={copy.credentials}>{credentials.join(', ') || copy.credentialsNone}</Detail>
@@ -81,15 +81,17 @@ function EntryAction({ busy, entry, source }: EntryActionProps): ReactElement | 
 
 export function EntryRow({ busy, entry, source }: EntryActionProps): ReactElement {
   return (
-    <li className="grid gap-1.5 rounded-md bg-(--ui-bg-quaternary) px-3 py-2.5">
+    <li className="grid grid-cols-[minmax(0,1fr)] gap-1.5 rounded-md bg-(--ui-bg-quaternary) px-3 py-2.5">
       <div className="flex items-center gap-2">
         <span className="min-w-0 flex-1 truncate font-medium">{entry.name}</span>
-        <span className={CAPTION}>{copy.version(entry.version)}</span>
-        <StatusChip status={entry.status} />
+        <span className={`shrink-0 ${CAPTION}`}>{copy.version(entry.version)}</span>
+        <span className="shrink-0">
+          <StatusChip status={entry.status} />
+        </span>
         <EntryAction busy={busy} entry={entry} source={source} />
       </div>
-      {entry.description && <p className="text-sm text-(--ui-text-secondary)">{entry.description}</p>}
-      {entry.status === 'error' && entry.error && <p className="text-xs text-destructive">{entry.error}</p>}
+      {entry.description && <p className="text-sm break-words text-(--ui-text-secondary)">{entry.description}</p>}
+      {entry.status === 'error' && entry.error && <p className="text-xs break-words text-destructive">{entry.error}</p>}
       <EntryDetails entry={entry} />
     </li>
   )
@@ -99,15 +101,17 @@ function ListingSection({ busy, listing }: { busy: ReadonlySet<string>; listing:
   const { source, state } = listing
 
   return (
-    <section className="grid gap-2">
+    <section className="grid grid-cols-[minmax(0,1fr)] gap-2">
       <h3 className="text-sm font-medium">{source.label}</h3>
       {state.status === 'loading' && <p className={CAPTION}>{copy.loading}</p>}
       {state.status === 'error' && (
-        <p className="text-sm text-destructive">{copy.sourceFailed(source.label, state.message)}</p>
+        <p className="text-sm break-words text-destructive">
+          {source.department === null ? copy.catalogUnreachable : copy.sourceFailed(source.label, state.message)}
+        </p>
       )}
       {state.status === 'ready' && state.entries.length === 0 && <p className={CAPTION}>{copy.noBots}</p>}
       {state.status === 'ready' && state.entries.length > 0 && (
-        <ul className="grid gap-2">
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
           {state.entries.map(entry => (
             <EntryRow busy={busy.has(entryKey(source, entry))} entry={entry} key={entry.name} source={source} />
           ))}
@@ -133,7 +137,7 @@ export function BotLibraryView(): ReactElement {
   }, [sourcesKey])
 
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
       {!root && <p className={CAPTION}>{copy.noLibraryFolder}</p>}
       {listings.map(listing => (
         <ListingSection busy={busy} key={listing.source.location} listing={listing} />

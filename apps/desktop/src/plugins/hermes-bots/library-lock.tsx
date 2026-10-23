@@ -62,12 +62,12 @@ export function LibraryLockBadge({ lock }: { lock: BotLibraryLock | null }) {
 /** The consistent notice, with the way out. */
 export function LibraryLockNotice({ lock }: { lock: BotLibraryLock | null }) {
   return lock ? (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-(--ui-stroke-secondary) px-3 py-2 text-xs leading-5 text-(--ui-text-tertiary)">
-      <span className="flex min-w-0 items-center gap-1.5">
-        <Codicon className="shrink-0" name="lock" />
+    <div className="grid justify-items-start gap-2 rounded-md border border-(--ui-stroke-secondary) px-3 py-2 text-xs leading-5 text-(--ui-text-tertiary)">
+      <span className="flex min-w-0 items-start gap-1.5">
+        <Codicon className="mt-0.5 shrink-0" name="lock" />
         {lock.notice}
       </span>
-      <Button className="shrink-0" onClick={lock.duplicate} size="sm" variant="secondary">
+      <Button onClick={lock.duplicate} size="sm" variant="secondary">
         {lock.duplicateLabel}
       </Button>
     </div>

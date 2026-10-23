@@ -20,10 +20,11 @@ function FolderRow(): ReactElement {
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <p className="truncate text-sm">{root ?? copy.noLibraryFolder}</p>
+        <p className="truncate text-sm" title={root ?? undefined}>{root ?? copy.noLibraryFolder}</p>
         <p className={CAPTION}>{copy.libraryFolderHint}</p>
       </div>
       <Button
+        className="shrink-0"
         onClick={() => void pickLibraryFolder(root).then(picked => picked && setLibraryRoot(picked))}
         size="sm"
         variant="outline"
@@ -48,14 +49,14 @@ function DepartmentRow(): ReactElement {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm">{department ?? '—'}</p>
           <p className={CAPTION}>{copy.departmentHint}</p>
         </div>
         {!choosing && (
-          <Button disabled={!root} onClick={() => setChoosing(true)} size="sm" variant="outline">
+          <Button className="shrink-0" disabled={!root} onClick={() => setChoosing(true)} size="sm" variant="outline">
             {copy.changeDepartment}
           </Button>
         )}
@@ -88,7 +89,7 @@ function DepartmentRow(): ReactElement {
 export function BotLibrarySettings(): ReactElement {
   return (
     <SettingsContent>
-      <div className="mx-auto grid w-full max-w-2xl gap-6">
+      <div className="mx-auto grid w-full max-w-2xl grid-cols-[minmax(0,1fr)] gap-6">
         <p className={CAPTION}>{copy.libraryIntro}</p>
         <section>
           <SectionHeading icon={FolderOpen} title={copy.libraryFolder} />

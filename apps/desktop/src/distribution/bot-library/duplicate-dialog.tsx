@@ -17,7 +17,7 @@ export function LibraryDuplicateDialog(): ReactElement | null {
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    setName(request ? defaultCopyName(request.label) : '')
+    setName(request ? defaultCopyName(request) : '')
     setBusy(false)
   }, [request])
 

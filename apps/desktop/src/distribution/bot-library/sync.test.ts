@@ -45,7 +45,7 @@ describe('the launch-time library sync', () => {
     syncLibraryBots.mockResolvedValue({ results: [result({})] })
     await runLibrarySync()
 
-    expect(notify).toHaveBeenCalledWith({ kind: 'success', message: 'Sales bot updated to 1.3' })
+    expect(notify).toHaveBeenCalledWith({ kind: 'success', message: 'Sales updated to 1.3' })
     expect(refreshProfiles).toHaveBeenCalled()
   })
 

@@ -105,7 +105,7 @@ describe('the Bot Library view', () => {
     expect(screen.getAllByText('Installed')).toHaveLength(2)
   })
 
-  it('shows a source that cannot be read in words, without hiding the others', async () => {
+  it('says plainly when the standard catalog is unreachable, without hiding the others', async () => {
     mockApi(request => {
       if (request.path.includes('github.com')) {
         throw new Error('offline')
@@ -115,7 +115,21 @@ describe('the Bot Library view', () => {
     })
     await renderView()
 
-    expect(await screen.findByText(/Could not read Standard bots: offline/)).toBeTruthy()
+    expect(await screen.findByText("The standard bots catalog isn\u2019t reachable right now.")).toBeTruthy()
     expect(screen.getByText('proposals')).toBeTruthy()
+  })
+
+  it('shows the backend sentence, not the bridge wrapper, when the department folder cannot be read', async () => {
+    mockApi(request => {
+      if (request.path.includes('github.com')) {
+        return { entries: [], source: '' }
+      }
+
+      throw new Error('Error invoking remote method \'hermes:api\': Error: 400: {"detail":"That folder has no bots."}')
+    })
+    await renderView()
+
+    expect(await screen.findByText('Could not read Sales: That folder has no bots.')).toBeTruthy()
+    expect(screen.queryByText(/Error invoking/)).toBeNull()
   })
 })

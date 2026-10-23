@@ -148,8 +148,10 @@ function BotsStep({ department, root }: { department: string; root: string }): R
     <Card hint={copy.onboardingBotsHint} title={copy.onboardingBotsTitle}>
       {loading && <p className={CAPTION}>{copy.loading}</p>}
       {listings.map(({ source, state }) =>
-        state.status === 'error' ? (
-          <p className="text-sm text-destructive" key={source.location}>
+        // The standard catalog is a bonus here: when it cannot be read the department's bots are what
+        // matters, and the Library view in Settings is where that is spelled out.
+        state.status === 'error' && source.department !== null ? (
+          <p className="text-sm break-words text-destructive" key={source.location}>
             {copy.sourceFailed(source.label, state.message)}
           </p>
         ) : null
