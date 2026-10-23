@@ -45,6 +45,7 @@ import { $botMeta, $lastRoster, botHandle, botRosterKey, botSelectionKey, isActi
 import { labeled } from './dialog-parts'
 import { botsText, type BotsText, useBots } from './i18n'
 import { displayName } from './labels'
+import { useBotLibraryLock } from './library-lock'
 import { botConnectionRoute, botRosterMeta, requestForBot } from './routing'
 import { ScreenHero } from './screen-hero'
 import { ID } from './shared'
@@ -487,6 +488,7 @@ export function RoutineRow({ job, onOpen, owner }: RoutineRowProps) {
   const { t } = useI18n()
   const c = t.cron
   const profile = typeof owner === 'string' ? owner : owner?.name
+  const lock = useBotLibraryLock(owner)
   const [busy, setBusy] = useState(false)
   // Optimistic overlay: null = trust server state. Set immediately on
   // toggle so the switch responds even before the refetch lands.
@@ -566,18 +568,20 @@ export function RoutineRow({ job, onOpen, owner }: RoutineRowProps) {
           disabled={busy || legacyUnsafe}
           onCheckedChange={value => act(value ? 'resume' : 'pause')}
         />
-        <Tip label={t.common.delete}>
-          <Button
-            aria-label={t.common.delete}
-            className="opacity-0 transition-opacity group-hover:opacity-100"
-            disabled={busy}
-            onClick={() => act('remove')}
-            size="icon-xs"
-            variant="ghost"
-          >
-            <Codicon name="trash" />
-          </Button>
-        </Tip>
+        {lock ? null : (
+          <Tip label={t.common.delete}>
+            <Button
+              aria-label={t.common.delete}
+              className="opacity-0 transition-opacity group-hover:opacity-100"
+              disabled={busy}
+              onClick={() => act('remove')}
+              size="icon-xs"
+              variant="ghost"
+            >
+              <Codicon name="trash" />
+            </Button>
+          </Tip>
+        )}
       </div>
       {/* The schedule pill and the next-run label keep their words: when the
           pane can't fit both on one line the next-run label wraps to a second

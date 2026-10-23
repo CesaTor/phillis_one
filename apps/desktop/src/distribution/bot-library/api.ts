@@ -101,3 +101,17 @@ export function rollbackLibraryBot(profile: string): Promise<LibraryRollbackResu
     timeoutMs: LIST_TIMEOUT_MS
   })
 }
+
+export interface LibraryDuplicateResult {
+  profile: string
+}
+
+/** An independent, editable copy of a library-installed bot: no memories, sessions or credentials, no library link. */
+export function duplicateLibraryBot(profile: string, name: string): Promise<LibraryDuplicateResult> {
+  return hermesApi<LibraryDuplicateResult>({
+    body: { name, profile },
+    method: 'POST',
+    path: '/api/bot-library/duplicate',
+    timeoutMs: LIST_TIMEOUT_MS
+  })
+}

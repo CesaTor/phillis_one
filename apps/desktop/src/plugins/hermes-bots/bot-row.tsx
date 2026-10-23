@@ -22,7 +22,6 @@ import {
   GlyphSpinner,
   haptic,
   host,
-  queryClient,
   RowButton,
   SessionStatusDot,
   SidebarRowLead,
@@ -33,6 +32,7 @@ import {
 
 import { avatarColor, botAppearance, BotFace } from './avatar'
 import { isBackfilledFacePng } from './avatar-image'
+import { BotDuplicateMenuItem } from './bot-row-duplicate'
 import {
   $botChatFocused,
   $focusedBotOwner,
@@ -45,7 +45,6 @@ import { ensureBotMetadata } from './canonical-chat'
 import {
   $botAttention,
   $botMeta,
-  $lastRoster,
   botActivitySession,
   botAttentionHint,
   botHandle,
@@ -54,7 +53,6 @@ import {
   botSourceStatus,
   isDefaultBot,
   newBotChat,
-  ROSTER_KEY,
   saveBotMeta
 } from './data'
 import { $groupChats, $groupChatWorkspace } from './group-chat'
@@ -64,7 +62,7 @@ import { $activeGroupMemberKeys } from './group-presence'
 import { fallbackSelectionAfterHide, isBotHidden, isBotPinned } from './hidden-bots'
 import { useBots } from './i18n'
 import { displayName, stripPreviewMarkdown } from './labels'
-import { duplicateBot } from './profile-ops'
+import { LibraryLockBadge, useBotLibraryLock } from './library-lock'
 import { botRecentSession, openBotRecentSession } from './recent-session'
 import { openRosterBot } from './roster-actions'
 import { botRosterMeta, botWorkspaceOwnerKey, setBotsWorkspaceOwner } from './routing'
@@ -127,6 +125,7 @@ export function BotRow({ bot, onDelete, onEdit, onGroup, onNewSection, showHandl
   const hidden = isBotHidden(bot, allMeta)
   const pinned = isBotPinned(bot, allMeta)
   const sourceStatus = botSourceStatus(bot)
+  const lock = useBotLibraryLock(bot)
   const groups = botGroups(meta)
   const last = bot.last_session
   // Highlight follows the chat on screen (focused session's owner), not the
@@ -292,6 +291,7 @@ export function BotRow({ bot, onDelete, onEdit, onGroup, onNewSection, showHandl
             <Tip label={rowTooltip}>
               <span className="min-w-0 truncate text-[0.8125rem] font-medium">{displayName(bot, meta)}</span>
             </Tip>
+            <LibraryLockBadge lock={lock} />
           </div>
           {attention ? (
             <Tip label={botAttentionHint(attention.reason)}>
@@ -416,27 +416,7 @@ export function BotRow({ bot, onDelete, onEdit, onGroup, onNewSection, showHandl
         >
           {groups.length ? b.bot.groupsMenu(groups.join(', ')) : b.bot.manageGroups}
         </ContextMenuItem>
-        <ContextMenuItem
-          onSelect={() => {
-            host.notify({
-              kind: 'info',
-              message: `Duplicating ${displayName(bot, meta)}…`
-            })
-            duplicateBot(bot, $lastRoster.get())
-              .then(name => {
-                queryClient.invalidateQueries({
-                  queryKey: ROSTER_KEY
-                })
-                host.notify({
-                  kind: 'success',
-                  message: `Created ${name} — full copy of ${bot.name}`
-                })
-              })
-              .catch(err => host.notifyError(err, b.bot.duplicateFailed))
-          }}
-        >
-          {b.bot.duplicate}
-        </ContextMenuItem>
+        <BotDuplicateMenuItem bot={bot} lock={lock} meta={meta} />
         <ContextMenuSeparator />
         <ContextMenuItem
           onSelect={() => {

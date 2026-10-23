@@ -31,6 +31,7 @@ import App from './app'
 import { RootErrorBoundary } from './components/error-boundary'
 import { HapticsProvider } from './components/haptics-provider'
 import { RootTooltipProvider } from './components/ui/tooltip'
+import { LibraryDuplicateDialog } from './distribution/bot-library/duplicate-dialog'
 import { BotLibraryOnboarding } from './distribution/bot-library/onboarding'
 import { ProfileI18nProvider as I18nProvider } from './i18n/profile-provider'
 import { installClipboardShim } from './lib/clipboard'
@@ -117,6 +118,7 @@ if (winParam === 'overlay') {
                   <HashRouter useTransitions={false}>
                     <App />
                     <BotLibraryOnboarding />
+                    <LibraryDuplicateDialog />
                   </HashRouter>
                 </RootTooltipProvider>
               </HapticsProvider>

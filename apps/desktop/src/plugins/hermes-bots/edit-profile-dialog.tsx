@@ -28,6 +28,7 @@ import { labeled } from './dialog-parts'
 import { editedLook, type EditProfileLook } from './edit-profile-look'
 import { useBots } from './i18n'
 import { displayName } from './labels'
+import { LibraryLockNotice, useBotLibraryLock } from './library-lock'
 import { AdvancedProfileConfig, applyAdvancedConfig, emptyAdvancedState } from './profile-config'
 import { botRosterMeta, requestForBot } from './routing'
 import type { AvatarAppearance, RosterRow } from './types'
@@ -50,6 +51,7 @@ export function EditProfileDialog({ bot, open, onClose }: EditProfileDialogProps
   const b = useBots()
   const metaAll = useValue($botMeta)
   const meta = bot ? botRosterMeta(bot, metaAll) : null
+  const lock = useBotLibraryLock(bot)
 
   // TODO(bot-mode-types): the no-bot fallback omits `image`, which the state
   // seeding below reads — `appearance.image` is undefined on that branch, so
@@ -203,6 +205,7 @@ export function EditProfileDialog({ bot, open, onClose }: EditProfileDialogProps
           <DialogDescription>{b.editor.editDescription(displayName(bot, null), bot.name)}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
+          <LibraryLockNotice lock={lock} />
           <div className="flex justify-center py-1">
             <BotFace color={avatarColor(color, bot.name)} image={image} name={bot.name} shape={shape} size={64} />
           </div>

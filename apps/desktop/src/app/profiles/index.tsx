@@ -6,6 +6,8 @@ import { CodeEditor } from '@/components/chat/code-editor'
 import { PageLoader } from '@/components/page-loader'
 import { Button } from '@/components/ui/button'
 import { ProfileGlyph } from '@/components/ui/profile-glyph'
+import { libraryLockOf } from '@/distribution/bot-library/locked'
+import { LibraryLockNotice, libraryMenuItems } from '@/distribution/bot-library/locked-notice'
 import { getProfileSoul, type ProfileInfo, updateProfileSoul } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { displayPath } from '@/lib/display-path'
@@ -138,6 +140,7 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
                         [{ icon: 'edit', label: p.renameMenu, onSelect: () => setPendingRename(profile) }]
                       : [
                           { icon: 'edit', label: p.renameMenu, onSelect: () => setPendingRename(profile) },
+                          ...libraryMenuItems(profile, selectAndRefresh),
                           {
                             icon: 'trash',
                             label: t.common.delete,
@@ -154,7 +157,7 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
             </PanelList>
 
             {selected ? (
-              <ProfileDetail key={selected.name} profile={selected} />
+              <ProfileDetail key={selected.name} onDuplicated={selectAndRefresh} profile={selected} />
             ) : (
               <PanelEmpty description={p.selectPrompt} icon="account" />
             )}
@@ -223,7 +226,7 @@ function ProfileRow({
   )
 }
 
-function ProfileDetail({ profile }: { profile: ProfileInfo }) {
+function ProfileDetail({ onDuplicated, profile }: { onDuplicated: (name: string) => void; profile: ProfileInfo }) {
   const { t } = useI18n()
   const p = t.profiles
 
@@ -262,12 +265,13 @@ function ProfileDetail({ profile }: { profile: ProfileInfo }) {
         />
       </header>
 
-      <SoulEditor profileName={profile.name} />
+      <LibraryLockNotice onDuplicated={onDuplicated} profile={profile} />
+      <SoulEditor locked={Boolean(libraryLockOf(profile))} profileName={profile.name} />
     </PanelDetail>
   )
 }
 
-function SoulEditor({ profileName }: { profileName: string }) {
+function SoulEditor({ locked, profileName }: { locked: boolean; profileName: string }) {
   const { t } = useI18n()
   const p = t.profiles
   const [content, setContent] = useState('')
@@ -341,6 +345,7 @@ function SoulEditor({ profileName }: { profileName: string }) {
       ) : (
         <div className="min-h-48">
           <CodeEditor
+            disabled={locked}
             filePath="SOUL.md"
             framed
             initialValue={content}
@@ -359,7 +364,7 @@ function SoulEditor({ profileName }: { profileName: string }) {
       )}
 
       <div className="flex justify-end">
-        <Button disabled={!dirty || saving || loading} onClick={() => void handleSave()} size="sm">
+        <Button disabled={!dirty || saving || loading || locked} onClick={() => void handleSave()} size="sm">
           <Save />
           {saving ? p.saving : p.saveSoul}
         </Button>

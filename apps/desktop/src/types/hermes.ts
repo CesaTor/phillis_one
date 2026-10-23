@@ -1131,8 +1131,15 @@ export interface ProfileInfo {
   /** Bot Mode title (profile.yaml ui_meta['hermes-bots'].title) — the name the
    *  Bots roster shows for this profile. Presentation-only. */
   bot_title?: string
+  /** The library distribution this profile was installed from (ReAgent's Bot Library). */
+  distribution_name?: null | string
+  distribution_version?: null | string
   has_env: boolean
   is_default: boolean
+  /** Library-installed: the library owns SOUL, shipped skills, shipped jobs and `library_managed_config`. */
+  library_locked?: boolean
+  /** The `config.yaml` keys the library overwrites on every update (dotted, e.g. `mcp_servers`). */
+  library_managed_config?: string[]
   model: null | string
   name: string
   path: string

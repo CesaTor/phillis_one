@@ -23,6 +23,8 @@ import { useState } from 'react'
 import { $lastRoster, ROSTER_KEY } from './data'
 import { labeled, ResizableFrame } from './dialog-parts'
 import { botsText, useBots } from './i18n'
+import { useBotLibraryLock } from './library-lock'
+import { LockedBotConfig } from './library-locked-config'
 import { McpSetupButton } from './mcp-setup'
 import { ModelPicker } from './model-picker'
 import { botBackendProfileScope, requestForBot, resolveBotConnectionRoute } from './routing'
@@ -138,6 +140,7 @@ export function AdvancedProfileConfig({ bot, state, setState }: AdvancedProfileC
   const botRoute = resolveBotConnectionRoute(bot).route
   const backendProfile = botRoute?.targetProfile || botRoute?.profile || bot.name
   const backendScope = botBackendProfileScope(botRoute, bot.name)
+  const lock = useBotLibraryLock(bot)
 
   if (!loaded) {
     setLoaded(true)
@@ -192,6 +195,10 @@ export function AdvancedProfileConfig({ bot, state, setState }: AdvancedProfileC
         <GlyphSpinner className="text-(--ui-text-tertiary)" spinner="breathe" />
       </div>
     )
+  }
+
+  if (lock) {
+    return <LockedBotConfig bot={bot} lock={lock} setState={setState} state={state} />
   }
 
   const visibleSkills = skillFilter.trim()
